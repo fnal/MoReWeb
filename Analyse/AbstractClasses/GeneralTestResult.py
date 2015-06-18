@@ -266,7 +266,8 @@ class GeneralTestResult:
             if len(data):
                 self.testSoftware = 'pxar'
             else:
-                self.testSoftware = 'psi46expert'
+                #self.testSoftware = 'psi46expert'
+                self.testSoftware = 'pxar'
         self.HistoDict = BetterConfigParser()
         fileName = 'Configuration/Software/%s.cfg' % self.testSoftware
         self.HistoDict.read(fileName)

@@ -42,4 +42,5 @@ def get_histo(rootfile,name,rocNo = None):
             for i in dir.GetListOfKeys():
                 all_names.append(i.GetName())
             raise NameError("Didn't found any possible candidate for the Xray spectrum: {Name} in {Names}".format(Name=name,Names=all_names))
+    print histoname
     return histo

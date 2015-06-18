@@ -5,9 +5,9 @@ import AbstractClasses.Helper.HistoGetter as HistoGetter
 
 class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
     def CustomInit(self):
-        self.Name='CMSPixel_QualificationGroup_Fulltest_Chips_Chip_BumpBonding_TestResult'
+        self.Name='CMSPixel_QualificationGroup_FPIXTest_Chips_Chip_BumpBonding_TestResult'
         self.NameSingle='BumpBonding'
-        self.Attributes['TestedObjectType'] = 'CMSPixel_QualificationGroup_Fulltest_ROC'
+        self.Attributes['TestedObjectType'] = 'CMSPixel_QualificationGroup_FPIXTest_ROC'
 
 
 
@@ -27,11 +27,11 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         try:
             histname = self.ParentObject.ParentObject.ParentObject.HistoDict.get(self.NameSingle,'Analog')
 	    object = HistoGetter.get_histo(self.ParentObject.ParentObject.FileHandle, histname, rocNo = ChipNo)
-            self.ResultData['Plot']['ROOTObject']  = object.Clone(self.GetUniqueID())
+	    self.ResultData['Plot']['ROOTObject']  = object.Clone(self.GetUniqueID())
         except:
             histname = self.ParentObject.ParentObject.ParentObject.HistoDict.get(self.NameSingle,'Digital')
-            print histname
             object = HistoGetter.get_histo(self.ParentObject.ParentObject.FileHandle, histname, rocNo = ChipNo)
+            print histname
             print object
             self.ResultData['Plot']['ROOTObject']  = object.Clone(self.GetUniqueID())
         if self.ResultData['Plot']['ROOTObject']:
