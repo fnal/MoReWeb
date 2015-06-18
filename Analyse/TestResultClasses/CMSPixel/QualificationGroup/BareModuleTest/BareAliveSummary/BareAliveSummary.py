@@ -19,7 +19,11 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
         for i in self.ParentObject.ResultData['SubTestResults']['Chips'].ResultData['SubTestResults']:
             ChipTestResultObject = self.ParentObject.ResultData['SubTestResults']['Chips'].ResultData['SubTestResults'][i]
-            histo = ChipTestResultObject.ResultData['SubTestResults']['BarePixelMap'].ResultData['Plot']['ROOTObject']
+            #print 'AQUI ',  self.ParentObject.testSoftware
+            if self.ParentObject.testSoftware=='pxar':
+                histo = ChipTestResultObject.ResultData['SubTestResults']['PixelMap'].ResultData['Plot']['ROOTObject']
+            else:
+                histo = ChipTestResultObject.ResultData['SubTestResults']['BarePixelMap'].ResultData['Plot']['ROOTObject']
             #print 'histo name inside BareBBSumary: ', histo.GetName()
 
             if not histo:
@@ -96,8 +100,6 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
         self.ResultData['Plot']['Format'] = 'png'
 
-        if self.SavePlotFile:
-            self.Canvas.SaveAs(self.GetPlotFileName())
-        self.ResultData['Plot']['Enabled'] = 1
+        self.SaveCanvas()
         self.ResultData['Plot']['Caption'] = 'bare BBmap'
-        self.ResultData['Plot']['ImageFile'] = self.GetPlotFileName()
+        

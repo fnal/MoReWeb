@@ -7,6 +7,7 @@ from AbstractClasses.GeneralTestResult import GeneralTestResult
 
 class TestResult(GeneralTestResult):
     def CustomInit(self):
+        #self.verbose = True
         self.Name = "CMSPixel_QualificationGroup_XrayCalibration_{Method}".format(Method=self.Attributes['Method'])
         self.Name += "_VcalCalibrationModule_VcalCalibrationROC_TestResult"
         self.NameSingle = "VcalCalibrationROC"
@@ -17,6 +18,7 @@ class TestResult(GeneralTestResult):
             print "".ljust(len(tag), '=')
             print tag
         self.Attributes['TestedObjectType'] = 'VcalCalibrationROC'
+        self.check_Test_Software()
 
     def PopulateResultData(self):
         if self.verbose:
@@ -32,6 +34,11 @@ class TestResult(GeneralTestResult):
         n_electrons = array.array('d', [])
         top_parent = self.ParentObject.ParentObject
         trimming = []
+        if self.HistoDict.has_option('XrayCalibration','IgnoredTarges'):
+            ignored_targets = map(lambda x: x.strip().lower(),self.HistoDict.get('XrayCalibration','IgnoredTarges').split(','))
+        else:
+            ignored_targets = []
+        # print 'Ignoring the following targets: ',ignored_targets
         for test in top_parent.ResultData['SubTestResults']:
             if not "FluorescenceTargetModule" in test:
                 continue
@@ -40,19 +47,24 @@ class TestResult(GeneralTestResult):
             try:
                 roc_results = module_results['FluorescenceTarget_C%i' % (self.Attributes["ChipNo"])]
             except KeyError as e:
-                print module_results.keys()
+                print 'Cannot find key FluorescenceTarget_C%i in %s'%(self.Attributes['ChipNo'],module_results.keys())
                 raise e
             trim = roc_results.Attributes['TrimValue']
             trimming.append(trim)
             key_value_pairs = roc_results.ResultData['KeyValueDictPairs']
+            target = key_value_pairs['Target']['Value']
+            if target.lower() in ignored_targets:
+                print 'ignoring Target: ', target
+                continue
             if self.verbose:
-                print test, key_value_pairs['Center']['Value'], key_value_pairs['TargetNElectrons']['Value']
+                print test, trim, key_value_pairs['Center']['Value'], key_value_pairs['TargetNElectrons']['Value']
+                print key_value_pairs.keys()
             peak_centers.append(key_value_pairs['Center']['Value'])
             peak_errors.append(key_value_pairs['Center']['Sigma'])
             n_electrons.append(key_value_pairs['TargetNElectrons']['Value'])
         point_pairs = zip(peak_centers, n_electrons, peak_errors)
         sorted_points = sorted(point_pairs, key=lambda point: point[1])
-        print sorted_points, trimming
+        # print sorted_points, trimming
         maxTrim = 0
         for e in sorted_points:
             num = sorted_points.index(e)
@@ -113,7 +125,7 @@ class TestResult(GeneralTestResult):
             print '\tchi2Total ', chi2_total, ' @ NDF ', ndf_total
             print '\tchi2Left  ', chi2_left, ' @ NDF ', ndf_left
             print '\tchi2Right ', chi2_right, ' @ NDF ', ndf_right
-        if ((chi2_right < chi2_total) or (chi2_left < chi2_total)) and ndf_total > 1:
+        if ((chi2_right < chi2_total) or (chi2_left < chi2_total)) and ndf_total > 1 and self.HistoDict.get('XrayCalibration','FitOption') != 'all':
             if chi2_right < chi2_left:
                 xmin = max(maxTrim, sorted_peak_centers[1])
                 self.ResultData['Plot']['ROOTObject'].Fit("pol1", fit_option, "SAME", xmin,
@@ -151,16 +163,14 @@ class TestResult(GeneralTestResult):
                 'Sigma': round(fit.GetParError(0), 3),
             },
             'chi2': {
-                'Value': round(fit.GetParameter(0), 3),
+                'Value': round(fit.GetChisquare() / fit.GetNDF(), 3),
                 'Label': 'Chi2',
                 'Unit': 'per NDF',
-                'Sigma': round(fit.GetChisquare() / fit.GetNDF(), 3),
+                'Sigma': 0,
             },
 
         }
         self.ResultData['KeyList'] = ['Slope', 'Offset']
         self.ResultData['Plot']['ROOTObject'].Draw("APL")
-        if self.SavePlotFile:
-            self.Canvas.SaveAs(self.GetPlotFileName())
-        self.ResultData['Plot']['Enabled'] = 1
-        self.ResultData['Plot']['ImageFile'] = self.GetPlotFileName()
+        self.SaveCanvas()
+        

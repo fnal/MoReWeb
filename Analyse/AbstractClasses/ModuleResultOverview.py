@@ -1,4 +1,5 @@
 import AbstractClasses.Helper.HtmlParser
+import re
 import datetime
 import os
 class ModuleResultOverview:
@@ -169,7 +170,12 @@ class ModuleResultOverview:
 
                 RowDict = FinalModuleRowsDict[Identificator]
                 for Key in TableColumnList:
-                    RowDict[Key] = RowTuple[Key]
+                    try:
+                        RowDict[Key] = RowTuple[Key]
+                    except IndexError as e:
+                        print 'searched Key:  ',Key
+                        print 'existing Keys: ',RowTuple.keys()
+                        raise e
 
                 ResultHTMLFileName = 'TestResult.html'
                 QualificationGroupSubfolder = 'QualificationGroup'
@@ -200,7 +206,17 @@ class ModuleResultOverview:
 
 
                 # Parse the date
-                RowDict['TestDate'] = datetime.datetime.fromtimestamp(RowTuple['TestDate']).strftime("%Y-%m-%d %H:%m")
+                try:
+                    if  type(RowTuple['TestDate']) == str:
+                        time = int(re.match(r'\d+', RowTuple['TestDate']).group())
+                    else:
+                        time = RowTuple['TestDate']
+                    RowDict['TestDate'] = datetime.datetime.fromtimestamp(time).strftime("%Y-%m-%d %H:%m")
+                except TypeError as e:
+                    print e,'\nerror',type(RowTuple['TestDate']),RowTuple['TestDate']
+                    RowDict['TestDate'] = datetime.datetime.fromtimestamp(1).strftime("%Y-%m-%d %H:%m")
+                    raise e
+
             else:
 #                TestType
                  FinalModuleRowsDict[Identificator]['TestType'] += ' & %s'%RowTuple['TestType']

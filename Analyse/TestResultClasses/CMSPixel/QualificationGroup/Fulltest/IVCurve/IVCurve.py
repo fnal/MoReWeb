@@ -19,7 +19,8 @@ class TestResult(GeneralTestResult):
             'CurrentAtVoltage150V': {
                 'Value': '{0:1.2f}'.format(0),
                 'Label': 'I(150 V)',
-                'Unit': 'μA'
+                'Unit': 'μA',
+                'Factor': 1e-6
             },
             'Variation': {
                 'Value': '{0:1.2f}'.format(0),
@@ -32,14 +33,15 @@ class TestResult(GeneralTestResult):
             self.ResultData['KeyValueDictPairs']['recalculatedCurrentAtVoltage150V'] = {
                 'Value': '{0:1.2f}'.format(0),
                 'Label': 'I_rec(150 V, 17 degC))',
-                'Unit': 'μA'
+                'Unit': 'μA',
+                'Factor': 1e-6
             }
-            self.ResultData['KeyList'].append('recalculatedCurrentVariation')
+            self.ResultData['KeyValueDictPairs']['CurrentAtVoltage150V']['Label'] = 'I_rec(150 V, {temp} degC'.format(temp = self.ParentObject.Attributes['TestTemperature'])
+            self.ResultData['KeyList'].append('recalculatedCurrentAtVoltage150V')
             self.ResultData['KeyValueDictPairs']['recalculatedCurrentVariation'] = {
                 'Value': '{0:1.2f}'.format(0),
-                'Label': 'I_rec(150 V, 17 degC)) / I(100 V)',
+                'Label': 'I_rec(150 V) / I_rec(100 V)'
             }
-            self.ResultData['KeyList'].append('recalculatedCurrentAtVoltage150V')
             self.ResultData['KeyList'].append('recalculatedCurrentVariation')
 
     @staticmethod
@@ -119,6 +121,11 @@ class TestResult(GeneralTestResult):
 
         IVCurveFileName = "{Directory}/ivCurve.log".format(Directory=Directory)
         IVCurveFile = open(IVCurveFileName, "r")
+        
+        self.ResultData['HiddenData']['IVCurveFilePath'] = IVCurveFileName
+        self.ResultData['HiddenData']['TestTemperature'] = self.ParentObject.Attributes['TestTemperature']
+        
+        
 
         lines = IVCurveFile.readlines()
         lines = [line.replace('\n', '') for line in lines]
@@ -135,7 +142,7 @@ class TestResult(GeneralTestResult):
             self.getIVTuple(IVCurveFileName, analyser)
 
         IVTuple = self.ResultData['HiddenData']['IVTuple']
-
+        
         Voltage_List = array.array('d', [])
         Current_List = array.array('d', [])
         CurrentAtVoltage100V = 0
@@ -159,13 +166,11 @@ class TestResult(GeneralTestResult):
                 continue
                 pass
             if voltage <= 0:
-            	if Entry.Current > -1e-10:
+                if Entry.Current > -1e-10:
                     continue
                 Voltage_List.append(-1. * voltage)
-                Current = self.TestResultEnvironmentObject.GradingParameters['IVCurrentFactor'] * Entry.Current
                 Current_List.append(
-                		Current
-                    )
+                    self.TestResultEnvironmentObject.GradingParameters['IVCurrentFactor'] * Entry.Current)
 
                 
                 if i > 0:
@@ -180,7 +185,12 @@ class TestResult(GeneralTestResult):
                 i += 1
 
         IVCurveFile.close()
-
+        
+        self.ResultData['HiddenData']['IVCurveData'] = {
+        	'VoltageList':Voltage_List,
+        	'CurrentList':Current_List
+        }
+        
         if CurrentAtVoltage100V != 0.:
             Variation = CurrentAtVoltage150V / CurrentAtVoltage100V
         else:
@@ -190,12 +200,17 @@ class TestResult(GeneralTestResult):
                                                                         self.ParentObject.Attributes['TestTemperature'],
                                                                         self.ParentObject.Attributes[
                                                                             'recalculateCurrentTo'])
+
             recalculatedCurrentAtVoltage100V = self.recalculate_current(CurrentAtVoltage100V,
                                                                         self.ParentObject.Attributes['TestTemperature'],
                                                                         self.ParentObject.Attributes[
                                                                             'recalculateCurrentTo'])
-            recalculatedCurrentAtVoltage150V *= self.ResultData['HiddenData']['FactorI'] * 1e6
-            recalculatedCurrentVariation = recalculatedCurrentAtVoltage150V / recalculatedCurrentAtVoltage100V
+            recalculatedCurrentAtVoltage100V *= self.ResultData['HiddenData']['FactorI']
+            recalculatedCurrentVariation = 0
+            if recalculatedCurrentAtVoltage100V != 0:
+                recalculatedCurrentVariation = recalculatedCurrentAtVoltage150V / recalculatedCurrentAtVoltage100V
+            else:
+                recalculatedCurrentVariation = 0
         if len(Voltage_List) == 0:
             self.ResultData['Plot']['ROOTObject'] = ROOT.TGraph()
         else:
@@ -215,17 +230,26 @@ class TestResult(GeneralTestResult):
         self.ResultData['Plot']['ROOTObject'].GetYaxis().CenterTitle()
         self.ResultData['Plot']['ROOTObject'].Draw("aC")
 
-        CurrentAtVoltage150V *= self.ResultData['HiddenData']['FactorI'] * 1e6
+        CurrentAtVoltage150V *= self.ResultData['HiddenData']['FactorI'] 
+        CurrentAtVoltage150V *= 1./self.ResultData['KeyValueDictPairs']['CurrentAtVoltage150V']['Factor'] #to show the value in muA and not in A
         self.ResultData['KeyValueDictPairs']['CurrentAtVoltage150V']['Value'] = '{0:1.2f}'.format(CurrentAtVoltage150V)
+        
+        CurrentAtVoltage100V *= self.ResultData['HiddenData']['FactorI'] 
+        self.ResultData['HiddenData']['CurrentAtVoltage100V'] = CurrentAtVoltage100V
         self.ResultData['KeyValueDictPairs']['Variation']['Value'] = '{0:1.2f}'.format(Variation)
 
         if self.ParentObject.Attributes.has_key('recalculateCurrentTo'):
+            recalculatedCurrentAtVoltage150V *= 1./self.ResultData['KeyValueDictPairs']['recalculatedCurrentAtVoltage150V']['Factor']
             self.ResultData['KeyValueDictPairs']['recalculatedCurrentAtVoltage150V']['Value'] = '{0:1.2f}'.format(
                 recalculatedCurrentAtVoltage150V)
             self.ResultData['KeyValueDictPairs']['recalculatedCurrentVariation']['Value'] = '{0:1.2f}'.format(
                 recalculatedCurrentVariation)
-        if self.SavePlotFile:
-            self.Canvas.SaveAs(self.GetPlotFileName())
-        self.ResultData['Plot']['Enabled'] = 1
+        self.SaveCanvas()
         self.ResultData['Plot']['Caption'] = 'I-V-Curve'
         self.ResultData['Plot']['ImageFile'] = self.GetPlotFileName()
+        if self.verbose:
+            print  self.ResultData['Plot']['Caption'] 
+            for key in  self.ResultData['KeyValueDictPairs']:
+                print '*',key,self.ResultData['KeyValueDictPairs'][key]['Value'],self.ResultData['KeyValueDictPairs'][key].get('Unit',None),self.ResultData['KeyValueDictPairs'][key].get('Factor',None)
+            #raw_input ('press enter')
+        

@@ -20,7 +20,6 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         histname = self.ParentObject.ParentObject.ParentObject.HistoDict.get(self.NameSingle,'AddressDecoding')
         self.ResultData['Plot']['ROOTObject'] =  HistoGetter.get_histo(self.ParentObject.ParentObject.FileHandle,histname,rocNo=ChipNo).Clone(self.GetUniqueID())
 
-
         if self.ResultData['Plot']['ROOTObject']:
             self.ResultData['Plot']['ROOTObject'].SetTitle("")
             self.ResultData['Plot']['ROOTObject'].GetXaxis().SetTitle("Column No.")
@@ -33,11 +32,8 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                 for row in range(self.nRows): #Row
                     self.HasAddressDecodingProblem(column, row)
 
-        if self.SavePlotFile:
-            self.Canvas.SaveAs(self.GetPlotFileName())
-        self.ResultData['Plot']['Enabled'] = 1
+        self.SaveCanvas()
         self.Title = 'Address Decoding: C{ChipNo}'.format(ChipNo=self.ParentObject.Attributes['ChipNo'])
-        self.ResultData['Plot']['ImageFile'] = self.GetPlotFileName()
         self.ResultData['KeyValueDictPairs']['AddressDecodingProblems'] = {'Value':self.AddressProblemList, 'Label':'Address Decoding Problems', }
         self.ResultData['KeyValueDictPairs']['NAddressDecodingProblems'] = {'Value':len(self.AddressProblemList), 'Label':'N Address DecodingProblems', }
         self.ResultData['KeyList'].append('NAddressDecodingProblems')

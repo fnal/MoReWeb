@@ -18,7 +18,7 @@ import Helper.ROOTConfiguration as ROOTConfiguration
 import glob
 
 
-class GeneralTestResult:
+class GeneralTestResult(object):
     nRows = 80
     nCols = 52
     nTotalChips = 16
@@ -70,11 +70,18 @@ class GeneralTestResult:
         self.Enabled = True
         self.SavePlotFile = True
         self.GzipSVG = TestResultEnvironmentObject.Configuration['GzipSVG']
+        
         self.DefaultImageFormat = TestResultEnvironmentObject.Configuration['DefaultImageFormat'].strip().lower()
+        if TestResultEnvironmentObject.Configuration.has_key('AdditionalImageFormats'):
+            self.AdditionalImageFormats = TestResultEnvironmentObject.Configuration['AdditionalImageFormats'].strip().lower().split(',')
+        else:
+        	self.AdditionalImageFormats = ['root', 'pdf']
+        	
         if TestResultEnvironmentObject.Configuration.has_key('OverviewHTMLLink'):
             self.OverviewHTMLLink = TestResultEnvironmentObject.Configuration['OverviewHTMLLink']
         else:
             self.OverviewHTMLLink = None
+            
         # Path for current test to folder with root-files
         self.RawTestSessionDataPath = ''
 
@@ -114,7 +121,9 @@ class GeneralTestResult:
                 'ROOTObject': None,
                 'Caption': '',
                 'ImageFile': '',
-                'Format': self.DefaultImageFormat  # svg
+                'Format': self.DefaultImageFormat,
+                'AdditionalFormats':self.AdditionalImageFormats,
+                'ImageFilePDF':'',
             },
             # SubTest Results
             'SubTestResults': {},
@@ -169,7 +178,8 @@ class GeneralTestResult:
 
         # Module Path
         self.ModulePath = self.NameSingle
-
+        
+        
         if InitialModulePath:
             self.ModulePath = InitialModulePath
 
@@ -225,7 +235,7 @@ class GeneralTestResult:
                 DisplayOptions.update(i['DisplayOptions'])
 
             i['DisplayOptions'] = DisplayOptions
-
+           
             importdir = self.ModulePath + '.' + SubModule
             try:
                 # print 'import ',importdir,SubModule
@@ -237,7 +247,7 @@ class GeneralTestResult:
                 f = __import__(importdir + '.TestResult', fromlist=[''])
                 print 'imported', f, 'please change name of file'
             pass
-
+		
             self.ResultData['SubTestResults'][i['Key']] = f.TestResult(
                 self.TestResultEnvironmentObject,
                 self,
@@ -332,18 +342,18 @@ class GeneralTestResult:
                 config.read(fileName)
             try:
                 version = config.get('ROC', 'type')
-            except (KeyError,ConfigParser.ConfigParser.NoOptionError):
+            except (KeyError,ConfigParser.NoOptionError,ConfigParser.NoSectionError):
                 warnings.warn('cannot find version name {section}'.format(section=config.sections()))
                 if 'ROC' in config.sections():
                     warnings.warn('cannot find type in  ROC-section: {options}'.format(options=config.options('ROC')))
                 version = 'none'
             try:
                 nRocs = config.getint('Module', 'rocs')
-            except (KeyError,ConfigParser.NoOptionError):
+            except (KeyError,ConfigParser.NoOptionError,ConfigParser.NoSectionError):
                 nRocs = 0
             try:
                 halfModule = config.get('Module', 'halfModule')
-            except (KeyError,ConfigParser.NoOptionError):
+            except (KeyError,ConfigParser.NoOptionError,ConfigParser.NoSectionError):
                 halfModule = 0
         version = version.rstrip('\n')
         if self.verbose:
@@ -391,6 +401,7 @@ class GeneralTestResult:
         self.SetCanvasSize()
         try:
             self.PopulateResultData()
+            #self.SaveCanvas()
             self.check_for_comments()
         except Exception as inst:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -485,11 +496,25 @@ class GeneralTestResult:
     # self.Canvas.Update()
 
     '''
+        Saving the Canvas
+    '''
+    def SaveCanvas(self):
+        if self.SavePlotFile:
+            if self.Canvas:
+                self.Canvas.SaveAs(self.GetPlotFileName())
+                for Suffix in self.ResultData['Plot']['AdditionalFormats']:
+                	self.Canvas.SaveAs(self.GetPlotFileName(Suffix))
+                	if Suffix == 'pdf':
+                		self.ResultData['Plot']['ImageFilePDF'] = self.GetPlotFileName(Suffix)
+                self.ResultData['Plot']['Enabled'] = 1
+                self.ResultData['Plot']['ImageFile'] = self.GetPlotFileName()
+    '''
         Generate the filename including the full path to the plot file according to the format
     '''
 
-    def GetPlotFileName(self):
-        Suffix = self.ResultData['Plot']['Format']
+    def GetPlotFileName(self,Suffix=''):
+        if Suffix == '':
+            Suffix = self.ResultData['Plot']['Format']
         return self.FinalResultsStoragePath + '/' + self.NameSingle + '.' + Suffix
 
     '''
@@ -729,6 +754,8 @@ class GeneralTestResult:
                     {
                         '###FILENAME###': HtmlParser.MaskHTML(
                             RecursionRelativePath + os.path.basename(TestResultObject.ResultData['Plot']['ImageFile'])),
+                        '###PDFFILENAME###': HtmlParser.MaskHTML(
+                            RecursionRelativePath + os.path.basename(TestResultObject.ResultData['Plot']['ImageFilePDF'])),
                         '###IMAGELARGECONTAINERID###': HtmlParser.MaskHTML(
                             TestResultObject.Name + '_' + TestResultObject.Key),
                         '###MARGIN_TOP###': str(int(-800. / float(

@@ -6,18 +6,19 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
     def CustomInit(self):
         if self.ParentObject.ParentObject.ParentObject.testSoftware=='pxar':
             print 'using Fulltest code'
-            self.Name='CMSPixel_QualificationGroup_BareModuleTest_Chips_Chip_BarePixelMap_TestResult'
-            self.NameSingle='PixelMap'
-            self.Attributes['TestedObjectType'] = 'CMSPixel_QualificationGroup_BareModuleTest_ROC'
-            self.AddressProblemList = set()
-            self.chipNo = self.ParentObject.Attributes['ChipNo']
+            #self.Name='CMSPixel_QualificationGroup_BareModuleTest_Chips_Chip_BarePixelMap_TestResult'
+            #self.NameSingle='PixelMap'
+            #self.Attributes['TestedObjectType'] = 'CMSPixel_QualificationGroup_BareModuleTest_ROC'
+            #self.AddressProblemList = set()
+            #self.chipNo = self.ParentObject.Attributes['ChipNo']
         else:
             self.Name='CMSPixel_QualificationGroup_BareModuleTest_Chips_Chip_BarePixelMap_TestResult'
             self.NameSingle='BarePixelMap'
             self.Attributes['TestedObjectType'] = 'CMSPixel_QualificationGroup_BareModuleTest_ROC'
             self.AddressProblemList = set()
             self.chipNo = self.ParentObject.Attributes['ChipNo']
-
+            self.DeadPixelList = set()
+            self.NDeadPixels = 0
 
     def PopulateResultData(self):
             ROOT.gStyle.SetOptStat(0);
@@ -47,10 +48,20 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                         print 'no Histogram for ChipNo',ChipNo
                     else:
                         self.ResultData['Plot']['ROOTObject']  = object.Clone(self.GetUniqueID())
-                    
+                        # loop over the histogram and find list of dead pixels
+                        nXbins = self.ResultData['Plot']['ROOTObject'].GetNbinsX()
+                        nYbins = self.ResultData['Plot']['ROOTObject'].GetNbinsY()
+                        for xbin in range(1,nXbins+1):
+                            for ybin in range(1,nYbins+1):
+                                binContent = self.ResultData['Plot']['ROOTObject'].GetBinContent(xbin,ybin)
+                                if binContent ==0:
+                                    self.DeadPixelList.add((ChipNo,xbin-1,ybin-1))
+
+
             if not object:   
                 print 'Inside BarePixelMap ChipNo: ', ChipNo
             else:
+                
 
                 if self.ResultData['Plot']['ROOTObject']:
                     self.ResultData['Plot']['ROOTObject'].SetTitle("")
@@ -60,9 +71,8 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                     self.ResultData['Plot']['ROOTObject'].GetYaxis().SetTitleOffset(1.5)
                     self.ResultData['Plot']['ROOTObject'].GetYaxis().CenterTitle()
                     self.ResultData['Plot']['ROOTObject'].Draw('colz')
-                    
-                    if self.SavePlotFile:
-                        self.Canvas.SaveAs(self.GetPlotFileName())
-                        self.ResultData['Plot']['Enabled'] = 1
-                        self.Title = 'BarePixelMap: C{ChipNo}'.format(ChipNo=self.ParentObject.Attributes['ChipNo'])
-                        self.ResultData['Plot']['ImageFile'] = self.GetPlotFileName()
+                    self.ResultData['KeyValueDictPairs']['DeadPixels'] = {'Value':self.DeadPixelList, 'Label':'Dead Pixels'}
+                    self.ResultData['KeyValueDictPairs']['NDeadPixels'] = { 'Value':len(self.DeadPixelList), 'Label':'N Dead Pixels'}
+
+                    self.Title = 'BarePixelMap: C{ChipNo}'.format(ChipNo=self.ParentObject.Attributes['ChipNo'])
+                    self.SaveCanvas()

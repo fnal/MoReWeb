@@ -179,7 +179,9 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             elif 'xrayspectrum' in test.testname.lower() or 'xraypxar' in test.testname.lower():
                 print '\t-> appendXraySpectrum'
                 tests, test, index = self.appendXrayCalibration(tests, test, index)
-            elif 'HighRateTest' in test.testname or 'HighRatePixelMap' in test.testname or 'HighRateEfficiency' in test.testname:
+            elif 'highratetest' in test.testname.lower() or \
+                 'highratepixelmap' in test.testname.lower() or \
+                 'highrateefficiency' in test.testname.lower():
                 # Accept all tests with names 'HighRateTest', 'HighRatePixelMap', and 'HighRateEfficiency' as high rate tests
                 # The distinction of the tests is made within the 'appendHighRateTest' function.
                 print '\t-> appendHighRateTest'
@@ -401,10 +403,12 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         self.appendOperationDetails(tests[-1]['InitialAttributes']['SubTestResultDictList'])
         xray_test = copy.deepcopy(tests[-1])
         xray_test2 = copy.deepcopy(tests[-1])
-        tests[-1] = self.set_analysis_method(xray_test,'Spectrum')
+        self.check_Test_Software()
+        if self.HistoDict.getboolean('XrayCalibration','SpectrumMethod'):
+            tests[-1] = self.set_analysis_method(xray_test,'Spectrum')
         self.check_Test_Software()
         print 'softwareVersion:',self.testSoftware
-        if self.testSoftware == 'pxar':
+        if self.testSoftware == 'pxar' and self.HistoDict.getboolean('XrayCalibration','SCurveMethod'):
             xray_test2 = self.set_analysis_method(xray_test2,'SCurve')
             tests.append(xray_test2)
         for i in tests:
