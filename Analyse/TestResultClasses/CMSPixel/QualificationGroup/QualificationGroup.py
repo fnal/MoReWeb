@@ -312,6 +312,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         index += 1
         if test and 'IV' in test.testname and test.environment.name == environment.name:
             #            print '\tFound corresponding', test.testname, test.environment
+            test.testname = 'IV'
             tests[-1]['InitialAttributes']['IncludeIVCurve'] = True
             tests[-1]['InitialAttributes']['IVCurveSubDirectory'] = '%03d_%s_%s' % (
             index, test.testname, test.environment.name)
