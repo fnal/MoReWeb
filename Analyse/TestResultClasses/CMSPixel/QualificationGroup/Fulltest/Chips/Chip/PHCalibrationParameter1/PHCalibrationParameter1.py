@@ -44,13 +44,27 @@ class TestResult(GeneralTestResult):
             'Par1sigma': {
                 'Value': self.ParentObject.ResultData['SubTestResults']['PHCalibrationTan'].ResultData[
                     'KeyValueDictPairs']['sigma']['Value'],
-                'Label': 'Par1 σ'
+                'Label': 'Par1 RMS'
             }
         })
         self.ResultData['KeyList'] += ['Par1N', 'Par1mu', 'Par1sigma']
 
         if self.verbose:
             print self.ResultData['KeyValueDictPairs']
+
+        self.ResultData['Plot']['ROOTObject_LowEdge'] = ROOT.TCutG('lLower', 2)
+        self.ResultData['Plot']['ROOTObject_LowEdge'].SetPoint(0, self.TestResultEnvironmentObject.GradingParameters['par1Min'], -1e6)
+        self.ResultData['Plot']['ROOTObject_LowEdge'].SetPoint(1, self.TestResultEnvironmentObject.GradingParameters['par1Min'], +1e6)
+        self.ResultData['Plot']['ROOTObject_LowEdge'].SetLineColor(ROOT.kRed)
+        self.ResultData['Plot']['ROOTObject_LowEdge'].SetLineStyle(2)
+        self.ResultData['Plot']['ROOTObject_LowEdge'].Draw('same')
+
+        self.ResultData['Plot']['ROOTObject_UpEdge'] = ROOT.TCutG('lUpper', 2)
+        self.ResultData['Plot']['ROOTObject_UpEdge'].SetPoint(0, self.TestResultEnvironmentObject.GradingParameters['par1Max'], -1e6)
+        self.ResultData['Plot']['ROOTObject_UpEdge'].SetPoint(1, self.TestResultEnvironmentObject.GradingParameters['par1Max'], +1e6)
+        self.ResultData['Plot']['ROOTObject_UpEdge'].SetLineColor(ROOT.kRed)
+        self.ResultData['Plot']['ROOTObject_UpEdge'].SetLineStyle(2)
+        self.ResultData['Plot']['ROOTObject_UpEdge'].Draw('same')
 
         self.SaveCanvas()
 

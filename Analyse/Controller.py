@@ -1,13 +1,15 @@
 #!/usr/bin/env python
  # -*- coding: utf-8 -*-
-from AbstractClasses import GeneralTestResult, TestResultEnvironment, ModuleResultOverview
+from AbstractClasses import GeneralTestResult, TestResultEnvironment, ModuleResultOverview, GeneralProductionOverview
 import AbstractClasses.Helper.hasher as hasher
 import argparse
 # from AbstractClasses import Helper
 import TestResultClasses.CMSPixel.QualificationGroup.QualificationGroup
+from OverviewClasses.CMSPixel.ProductionOverview import ProductionOverview
 import os, time,shutil, sys
 # import errno
 import ConfigParser
+import datetime
 
 #arg parse to analyse a single Fulltest
 parser = argparse.ArgumentParser(description='MORE web Controller: an analysis software for CMS pixel modules and ROCs')
@@ -43,6 +45,17 @@ parser.add_argument('-norev','--no-revisionnumber',dest='norev',action='store_tr
                     help='deactivates the revsion sting with in the path')
 parser.add_argument('-f', '--force', dest = 'force', action = 'store_true', default = False,
                     help = 'Forces runnig analysis even if checksums agree')
+parser.add_argument('-c', '--comment', dest = 'comment', action = 'store_true', default = False,
+                    help = 'Add a comment to a local db row.')
+parser.add_argument('-d', '--delete-row', dest = 'deleterow', action = 'store_true', default = False,
+                    help = 'Let you select a row in the local database to delete.')
+parser.add_argument('-r', '--refit', dest = 'refit', action = 'store_true', default = False,
+                    help = 'Forces refitting even if files exist')
+parser.add_argument('-p', '--production-overview', dest = 'production_overview', action = 'store_true', default = False,
+                    help = 'Creates production overview page in the end')
+parser.add_argument('-new', '--new-folders-only', dest = 'no_re_analysis', action = 'store_true', default = False,
+                    help = 'Do not analyze folder if it already exists in DB, even if MoReWeb version has changed')
+
 parser.set_defaults(DBUpload=True)
 args = parser.parse_args()
 verbose = args.verbose
@@ -56,7 +69,9 @@ Configuration.read([
     'Configuration/GradingParameters.cfg',
     'Configuration/SystemConfiguration.cfg',
     'Configuration/Paths.cfg',
-    'Configuration/ModuleInformation.cfg'])
+    'Configuration/ModuleInformation.cfg',
+    'Configuration/ProductionOverview.cfg'
+    ])
 
 if args.revision != -1:
     revisionNumber = int(args.revision)
@@ -104,6 +119,35 @@ TestResultEnvironmentInstance.SQLiteDBPath = SQLiteDBPath
 TestResultEnvironmentInstance.GlobalOverviewPath = GlobalOverviewPath
 TestResultEnvironmentInstance.OpenDBConnection()
 TestResultEnvironmentInstance.GlobalDataDirectory = GlobalDataDirectory
+
+MoReWebVersion = None
+try:
+    MoReWebVersion = subprocess.check_output(["git", "describe"])
+except:
+    try:
+        import commands
+        MoReWebVersion = commands.getstatusoutput('git describe')[1]
+    except:
+        pass
+
+MoReWebBranch = None
+try:
+    MoReWebBranch = subprocess.check_output(["git", "rev-parse --abbrev-ref HEAD"])
+except:
+    try:
+        import commands
+        MoReWebBranch = commands.getstatusoutput('git rev-parse --abbrev-ref HEAD')[1]
+    except:
+        pass
+
+if MoReWebVersion:
+    TestResultEnvironmentInstance.MoReWebVersion = MoReWebVersion
+
+if MoReWebBranch:
+    TestResultEnvironmentInstance.MoReWebBranch = MoReWebBranch
+
+if args.refit:
+    TestResultEnvironmentInstance.Configuration['Fitting']['refit'] = True
 
 if Configuration.has_option('Paths','AbsoluteOverviewPage'):
     TestResultEnvironmentInstance.Configuration['OverviewHTMLLink'] = Configuration.get('Paths','AbsoluteOverviewPage')
@@ -160,7 +204,7 @@ def NeedsToBeAnalyzed(FinalModuleResultsPath,ModuleInformation):
             if verbose: print 'use Global DataBase: ',Configuration.get('SystemConfiguration','UseGlobalDatabase')
             bExistInDB = False
         if verbose: print 'same file: %s / exists in DB: %s'%(bSameFiles,bExistInDB)
-        if bSameFiles and bExistInDB:
+        if (bSameFiles or args.no_re_analysis) and bExistInDB:
             print 'do not analyse folder '+ FinalModuleResultsPath +'\n'
             retVal = False
     return retVal
@@ -266,13 +310,37 @@ def AnalyseSingleQualification(Folder):
         AnalyseTestData(ModuleInformationRaw, Folder)
 
 def AnalyseAllTestDataInDirectory(GlobalDataDirectory):
-    for Folder in os.listdir(GlobalDataDirectory):
+    Folders = os.listdir(GlobalDataDirectory)
+    FoldersToBeAnalyzed = []
+
+    for Folder in Folders:
+
         absPath = GlobalDataDirectory+'/'+Folder
         if not os.path.isdir(absPath):
             continue
+
         ModuleInformationRaw = Folder.split('_')
         if len(ModuleInformationRaw) >= 5:
-            AnalyseTestData(ModuleInformationRaw,Folder)
+            ModuleInformation = extractModuleInformation(ModuleInformationRaw)
+
+            if not args.singleQualificationPath == '':
+                TestResultEnvironmentInstance.ModuleDataDirectory = Folder
+                FinalModuleResultsPath = GetFinalModuleResultsPath(Folder)
+            else:
+                FinalModuleResultsPath = GetFinalModuleResultsPath(Folder)
+                TestResultEnvironmentInstance.ModuleDataDirectory = GlobalDataDirectory+'/'+Folder
+            TestResultEnvironmentInstance.FinalModuleResultsPath = FinalModuleResultsPath
+
+            if NeedsToBeAnalyzed(TestResultEnvironmentInstance.FinalModuleResultsPath ,ModuleInformation):
+                FoldersToBeAnalyzed.append(Folder)
+
+    print "\x1b[34mINFO: %d folder%s found that needs to be analyzed!\x1b[0m"%(len(FoldersToBeAnalyzed), 's' if len(FoldersToBeAnalyzed)!=1 else '')
+    Counter = 1
+    for Folder in FoldersToBeAnalyzed:
+        ModuleInformationRaw = Folder.split('_')
+        print "\x1b[34mINFO: Analyzing folder %d/%d (%s %s)\x1b[0m"%(Counter, len(FoldersToBeAnalyzed),ModuleInformationRaw[1],ModuleInformationRaw[0])
+        AnalyseTestData(ModuleInformationRaw,Folder)
+        Counter += 1
 
 def AnalyseSingleFullTest(singleFulltestPath):
     print 'analysing a single Fulltest at destination: "%s"' % args.singleFulltestPath
@@ -378,8 +446,134 @@ elif not args.purduetestPath=='':
 elif int(Configuration.get('SystemConfiguration', 'GenerateResultData')):
     AnalyseAllTestDataInDirectory(GlobalDataDirectory)
 
+# allows to add comments to local db file
+if args.comment:
+    ModuleID = raw_input("Enter module ID (eg. M1234): ")
+
+    if TestResultEnvironmentInstance.Configuration['Database']['UseGlobal']:
+        print "--comment option not supported for global db"
+    else:
+        AdditionalWhere = ''
+        if ModuleID:
+            AdditionalWhere += ' AND ModuleID=:ModuleID '
+        TestResultEnvironmentInstance.LocalDBConnectionCursor.execute(
+            'SELECT * FROM ModuleTestResults '+
+            'WHERE 1=1 '+
+            AdditionalWhere+
+            'ORDER BY ModuleID ASC,TestType ASC,TestDate ASC ',
+            {
+                'ModuleID':ModuleID
+            }
+        )
+        Rows = TestResultEnvironmentInstance.LocalDBConnectionCursor.fetchall()
+
+        print "Available qualifications for module %s:"%ModuleID
+        print "  ", 'ID'.ljust(6), ' QualificationType'.ljust(30), 'TestType'.ljust(30), 'Grade'.ljust(3), 'Comments'.ljust(30)
+        RowID = 0
+        for Row in Rows:
+            print " ", "\x1b[31m", ("%d"%RowID).ljust(6), "\x1b[0m", Row['QualificationType'].ljust(30), Row['TestType'].ljust(30), ("%s"%Row['Grade']).ljust(3), ("%s"%Row['Comments']).ljust(30)
+            RowID += 1
+
+        RowID = int(raw_input("Select row: "))
+        if RowID >= 0 and RowID < len(Rows) and Rows[RowID]:
+            print ""
+            print "current comment: %s"%Rows[RowID]['Comments']
+
+            Comments = raw_input("Enter new comment: ")
+            result = TestResultEnvironmentInstance.LocalDBConnectionCursor.execute( 
+                'UPDATE ModuleTestResults SET Comments = :Comments WHERE ModuleID = :ModuleID AND TestType = :TestType AND TestDate = :TestDate AND QualificationType = :QualificationType',
+                {
+                    'ModuleID': Rows[RowID]['ModuleID'],
+                    'TestType': Rows[RowID]['TestType'],
+                    'TestDate': Rows[RowID]['TestDate'],
+                    'QualificationType': Rows[RowID]['QualificationType'],
+                    'Comments': Comments
+                }
+            )
+            if TestResultEnvironmentInstance.LocalDBConnection:
+                TestResultEnvironmentInstance.LocalDBConnection.commit()
+            else:
+                print "no connection to local db!"
+
+        else:
+            print "row id not found!"
+
+
+# allows to delete a row in local db file
+if args.deleterow:
+    print "First enter module ID and then select one of the existing rows to delete or type 'all' to delete all of them."
+    ModuleID = raw_input("Enter module ID (eg. M1234): ")
+
+    if TestResultEnvironmentInstance.Configuration['Database']['UseGlobal']:
+        print "--delete option not supported for global db"
+    else:
+        AdditionalWhere = ''
+        if ModuleID:
+            AdditionalWhere += ' AND ModuleID=:ModuleID '
+        TestResultEnvironmentInstance.LocalDBConnectionCursor.execute(
+            'SELECT * FROM ModuleTestResults '+
+            'WHERE 1=1 '+
+            AdditionalWhere+
+            'ORDER BY ModuleID ASC,TestType ASC,TestDate ASC ',
+            {
+                'ModuleID':ModuleID
+            }
+        )
+        Rows = TestResultEnvironmentInstance.LocalDBConnectionCursor.fetchall()
+
+        print "Available qualifications for module %s:"%ModuleID
+        print "  ", 'ID'.ljust(6),  ' TestDate'.ljust(25),  'QualificationType'.ljust(30), 'TestType'.ljust(30), 'Grade'.ljust(3), 'Comments'.ljust(30)
+        RowID = 0
+        for Row in Rows:
+            print " ", "\x1b[31m", ("%d"%RowID).ljust(6), "\x1b[0m", datetime.datetime.fromtimestamp(int(Row['TestDate'])).strftime('%Y-%m-%d %H:%M:%S').ljust(25), Row['QualificationType'].ljust(30), Row['TestType'].ljust(30), ("%s"%Row['Grade']).ljust(3), ("%s"%Row['Comments']).ljust(30)
+            RowID += 1
+
+        RowID = raw_input("Select row: ")
+        if RowID.lower().strip() == 'all':
+            print "delete module %s from local DB?"%ModuleID
+            confirmation = raw_input("(y/N)")
+            if confirmation.lower().strip() == 'y':
+                result = TestResultEnvironmentInstance.LocalDBConnectionCursor.execute( 
+                    'DELETE FROM ModuleTestResults WHERE ModuleID = :ModuleID',
+                    {
+                        'ModuleID': ModuleID,
+                    }
+                )
+                if TestResultEnvironmentInstance.LocalDBConnection:
+                    TestResultEnvironmentInstance.LocalDBConnection.commit()
+                else:
+                    print "no connection to local db!"
+        elif int(RowID) >= 0 and int(RowID) < len(Rows) and Rows[int(RowID)]:
+            RowID = int(RowID)
+            Row = Rows[RowID]
+            print "delete? ", ("%d"%RowID), datetime.datetime.fromtimestamp(int(Row['TestDate'])).strftime('%Y-%m-%d %H:%M:%S'), Row['QualificationType'], Row['TestType'], ("%s"%Row['Grade']), ("%s"%Row['Comments'])
+            confirmation = raw_input("(y/N)")
+            if confirmation.lower().strip() == 'y':
+                result = TestResultEnvironmentInstance.LocalDBConnectionCursor.execute( 
+                    'DELETE FROM ModuleTestResults WHERE ModuleID = :ModuleID AND TestType = :TestType AND TestDate = :TestDate AND QualificationType = :QualificationType',
+                    {
+                        'ModuleID': Rows[RowID]['ModuleID'],
+                        'TestType': Rows[RowID]['TestType'],
+                        'TestDate': Rows[RowID]['TestDate'],
+                        'QualificationType': Rows[RowID]['QualificationType']
+                    }
+                )
+                if TestResultEnvironmentInstance.LocalDBConnection:
+                    TestResultEnvironmentInstance.LocalDBConnection.commit()
+                else:
+                    print "no connection to local db!"
+
+        else:
+            print "row id not found!"
+
 ModuleResultOverviewObject = ModuleResultOverview.ModuleResultOverview(TestResultEnvironmentInstance)
 ModuleResultOverviewObject.GenerateOverviewHTMLFile()
+
+if args.production_overview:
+    print "production overview:"
+    ProductionOverviewObject = ProductionOverview.ProductionOverview(TestResultEnvironmentInstance)
+    ProductionOverviewObject.GenerateOverview()
+
 # TestResultEnvironmentInstance.ErrorList.append( {'test1':'bla'})
 print '\nErrorList:'
 for i in TestResultEnvironmentInstance.ErrorList:

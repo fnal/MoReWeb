@@ -16,29 +16,44 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         ROOT.gPad.SetLogy(1);
         ROOT.gStyle.SetOptStat(1);
         ChipNo=self.ParentObject.Attributes['ChipNo']
+        try:
+            DeadPixelList = self.ParentObject.ResultData['SubTestResults']['PixelMap'].ResultData['KeyValueDictPairs']['DeadPixels']['Value']
+        except:
+            DeadPixelList = ()
+            print "warning: could not find pixel alive map, cannot distinguish threshold defects from dead pixels!"
+
         # TH1D
         HistoDict = self.ParentObject.ParentObject.ParentObject.HistoDict
-        histname = HistoDict.get(self.NameSingle, 'ThresholdDist')
-        object = HistoGetter.get_histo(self.ParentObject.ParentObject.FileHandle, histname, rocNo = ChipNo)
+        histname = HistoDict.get(self.NameSingle, 'ThresholdMap')
+        ThresholdMap = HistoGetter.get_histo(self.ParentObject.ParentObject.FileHandle, histname, rocNo = ChipNo)
         self.ResultData['Plot']['ROOTObject'] = ROOT.TH1F(self.GetUniqueID(),'ThresholdDist',256,-.5,255.5)
-        for bin in range(0,object.GetNbinsX()+1):
-            x = object.GetXaxis().GetBinLowEdge(bin)
-            content = object.GetBinContent(bin)
-            # print x, content
-            self.ResultData['Plot']['ROOTObject'].Fill(x,content)
-        self.ResultData['Plot']['ROOTObject'].SetEntries(object.GetEntries())
+
+        for col in range(0, ThresholdMap.GetNbinsX()):
+            for row in range(0, ThresholdMap.GetNbinsY()):
+                threshold = ThresholdMap.GetBinContent(col + 1, row + 1)
+                if (ChipNo, col, row) not in DeadPixelList:
+                    self.ResultData['Plot']['ROOTObject'].Fill(threshold)
+
         bin_min = self.ResultData['Plot']['ROOTObject'].FindFirstBinAbove()
         bin_max = self.ResultData['Plot']['ROOTObject'].FindLastBinAbove()
         self.ResultData['Plot']['ROOTObject'].GetXaxis().SetRange(bin_min-1,bin_max+1)
-        # print self.ParentObject.ParentObject.FileHandle
-        # print object.GetNbinsX(),object.GetXaxis().GetXmin(),object.GetXaxis().GetXmax()
-        histname = HistoDict.get(self.NameSingle, 'ThresholdMap')
-        object = HistoGetter.get_histo(self.ParentObject.ParentObject.FileHandle, histname, rocNo = ChipNo)
-        self.ResultData['Plot']['ROOTObject_Map'] = object.Clone(self.GetUniqueID())
+
+        self.ResultData['Plot']['ROOTObject_Map'] = ThresholdMap.Clone(self.GetUniqueID())
+        gaus = ROOT.TF1('gaus', 'gaus(0)', 0, 255)
+        gaus.SetParameters(1600., 
+                           self.ResultData['Plot']['ROOTObject'].GetMean(),
+                           self.ResultData['Plot']['ROOTObject'].GetRMS())
+        gaus.SetParLimits(0, 0., 4160.)
+        gaus.SetParLimits(1, 0., 2.*self.ResultData['Plot']['ROOTObject'].GetMean())
+        gaus.SetParLimits(2, 0., 2.*self.ResultData['Plot']['ROOTObject'].GetRMS())
         #mG
-        MeanVcalThr = self.ResultData['Plot']['ROOTObject'].GetMean()
+        #switching to gaussian fit so that width is not driven by outliers (counted separately as pixel defects)
+        self.ResultData['Plot']['ROOTObject'].Fit(gaus, 'QBR', '', 0., 255.)
+        #MeanVcalThr = self.ResultData['Plot']['ROOTObject'].GetMean()
+        MeanVcalThr = gaus.GetParameter(1)
         #sG
-        RMSVcalThr = self.ResultData['Plot']['ROOTObject'].GetRMS()
+        #RMSVcalThr = self.ResultData['Plot']['ROOTObject'].GetRMS()
+        RMSVcalThr = gaus.GetParameter(2)
         #nG
         first = self.ResultData['Plot']['ROOTObject'].GetXaxis().GetFirst()
         last = self.ResultData['Plot']['ROOTObject'].GetXaxis().GetLast()
@@ -67,7 +82,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             },
             'sigma':{
                 'Value':'{0:1.2f}'.format(RMSVcalThr),
-                'Label':'σ'
+                'Label':'σ_fit'
             },
             'vcal':{
                 'Value':'{0:1.2f}'.format(self.vcalTrim),
@@ -112,10 +127,11 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         if self.ResultData['Plot']['ROOTObject_Map']:
             for column in range(self.nCols):  # Column
                 for row in range(self.nRows):  # Row
-                    self.HasThresholdDefect(column, row)
+                    if (ChipNo, column, row) not in DeadPixelList:
+                        self.HasThresholdDefect(column, row)
 
-        self.SaveCanvas()
         self.Title = 'Vcal Threshold Trimmed'
+        self.SaveCanvas()
         self.ResultData['KeyValueDictPairs']['TrimProblems'] = { 'Value':self.ThrDefectList, 'Label':'Trim Problems'}
         self.ResultData['KeyValueDictPairs']['NTrimProblems'] = { 'Value':len(self.ThrDefectList), 'Label':'N Trim Problems'}
         self.ResultData['KeyList'].append('NTrimProblems')
