@@ -188,7 +188,8 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             if 'fulltest' in test.testname.lower():
                 print '\t-> appendFulltest'
                 tests, test, index = self.appendFulltest(tests, test, index)
-<<<<<<< HEAD
+            elif 'powercycle' in test.testname:
+                test = test.next()
             elif 'fpixtest' in test.testname.lower():
                 print '\t-> appendFPIXTest'
                 tests, test, index = self.appendFPIXTest(tests, test, index)
@@ -198,9 +199,6 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             elif 'pretest' in test.testname.lower():
                 print '\t-> appendPretest'
                 # skips the pretest, not a high priority to parse
-=======
-            elif 'powercycle' in test.testname:
->>>>>>> psi46/master
                 test = test.next()
             elif 'cycle' in test.testname.lower():
                 print '\t-> appendTemperatureCycle'
