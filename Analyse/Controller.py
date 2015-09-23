@@ -20,13 +20,6 @@ parser.add_argument('-BT','--bareModuletest',dest='bareModuletestPath',metavar='
                      help='option which can be used to analyse a bare Module Test, as the second argument needs the path where the single fulltest data are stored',
                      default='')
 
-parser.add_argument('-PT','--purduetest',dest='purduetestPath',metavar='PATH',
-                    help='option which can be used to analyse Purdue data, as the second argument needs the path where the Purdue test data are stored',
-                    default='')
-
-parser.add_argument('-FPIXT','--FPIXTest',dest='FPIXTestPath',metavar='PATH',
-                    help='option which can be used to analyse FPIXTest data, as the second argument needs the path where the FPIXTest data are stored',
-                    default='')
 
 parser.add_argument('-FQ','--singleQualification',dest='singleQualificationPath',metavar='PATH',
                     help='option which activates an analysis of a single Qualification',
@@ -256,10 +249,7 @@ def AnalyseTestData(ModuleInformationRaw,ModuleFolder):
         print 'singleQualification'
         TestResultEnvironmentInstance.ModuleDataDirectory = ModuleFolder
         FinalModuleResultsPath = GetFinalModuleResultsPath(ModuleFolder)
-    elif not args.purduetestPath == '':
-        print 'purduetest'
-        TestResultEnvironmentInstance.ModuleDataDirectory = ModuleFolder
-        FinalModuleResultsPath = GetFinalModuleResultsPath(ModuleFolder)
+
     else:
         FinalModuleResultsPath = GetFinalModuleResultsPath(ModuleFolder)
         TestResultEnvironmentInstance.ModuleDataDirectory = GlobalDataDirectory+'/'+ModuleFolder
@@ -372,37 +362,6 @@ def AnalyseSingleFullTest(singleFulltestPath):
     ModuleTestResult.GenerateFinalOutput()
     pass
 
-
-def AnalysePurdueTest(purduetestPath):
-    print 'analysing a single Purdue test at destination: "%s"' % args.purduetestPath
-    TestResultEnvironmentInstance.ModuleDataDirectory  = args.purduetestPath
-    TestResultEnvironmentInstance.FinalModuleResultsPath = args.purduetestPath
-    ModuleID = args.purduetestPath.split('/')[-1]
-    TestDate = '%s'%int(time.time())
-    TestType = 'purduetest'
-    ModuleInformation = {
-        'ModuleID': ModuleID,
-        'TestDate': TestDate,
-        'QualificationType': 'purduetest',
-        'TestType': 'purduetest'
-    }
-    FinalResultsPath = args.purduetestPath+'/FinalResults'+RevisionString
-    ModuleTestResult = GetModuleTestResult(TestResultEnvironment, FinalResultsPath, ModuleInformation)
-    print 'ModuleTestResult',ModuleTestResult
-                # add apache webserver configuration for compressed svg images
-    CreateApacheWebserverConfiguration(FinalResultsPath)
-    print 'Working on: ',ModuleInformation
-    print ' -- '
-
-    print '    Populating Data'
-    ModuleTestResult.PopulateAllData()
-    if args.DBUpload:
-        ModuleTestResult.WriteToDatabase() # needed before final output
-
-    print '    Generating Final Output'
-    ModuleTestResult.GenerateFinalOutput()
-    pass
-
 def AnalyseBareModuleTest(bareModuletestPath):
     print 'analysing a single Fulltest at destination: "%s"' % args.bareModuletestPath
     TestResultEnvironmentInstance.ModuleDataDirectory  = args.bareModuletestPath
@@ -440,9 +399,6 @@ elif not args.singleQualificationPath=='':
     AnalyseSingleQualification(args.singleQualificationPath)
 elif not args.bareModuletestPath=='':
     AnalyseBareModuleTest(args.bareModuletestPath)
-elif not args.purduetestPath=='':
-    AnalysePurdueTest(args.purduetestPath)
-
 elif int(Configuration.get('SystemConfiguration', 'GenerateResultData')):
     AnalyseAllTestDataInDirectory(GlobalDataDirectory)
 
@@ -580,4 +536,3 @@ for i in TestResultEnvironmentInstance.ErrorList:
     print i
     print '\t - %s: %s'%(i['ModulePath'],i['ErrorCode'])
 sys.exit(len(TestResultEnvironmentInstance.ErrorList))
-
