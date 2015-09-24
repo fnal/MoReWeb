@@ -70,6 +70,14 @@ class TestResult(GeneralTestResult):
                 },
             },
 
+            {
+                'Key': 'PixelAliveMap',
+                'DisplayOptions': {
+                    'Width': 4,
+                    'Order': 2,
+                }
+            },
+
             # {
             #     'Key': 'BumpBondingMap',
             #     'DisplayOptions': {
