@@ -25,11 +25,11 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
         self.ResultData['SubTestResultDictList'] += [
 
-                {'Key':'OpParameters',
-                    'DisplayOptions':{
-                        'Order':16,
-                    }
-                },
+                # {'Key':'OpParameters',
+                #     'DisplayOptions':{
+                #         'Order':16,
+                #     }
+                # },
                 {
                     'Key':'PixelMap',
                     'DisplayOptions':{
@@ -51,26 +51,26 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                 #        'Order':4,
                 #    }
                 #},# depends on
-                {'Key':'BumpBonding',
-                    'DisplayOptions':{
-                        'Order':6,
-                    }
-                },
-                {'Key':'BumpBondingProblems',
-                    'DisplayOptions':{
-                        'Order':5,
-                    }
-                },
+                # {'Key':'BumpBonding',
+                #     'DisplayOptions':{
+                #         'Order':6,
+                #     }
+                # },
+                # {'Key':'BumpBondingProblems',
+                #     'DisplayOptions':{
+                #         'Order':5,
+                #     }
+                # },
                 #{'Key':'TrimBitTest',
                 #    'DisplayOptions':{
                 #        'Order':7,
                 #    }
                 #},
-                {'Key':'AddressDecoding',
-                    'DisplayOptions':{
-                        'Order':9,
-                    }
-                },
+                # {'Key':'AddressDecoding',
+                #     'DisplayOptions':{
+                #         'Order':9,
+                #     }
+                # },
                 #{'Key':'PHCalibrationGain',
                 #    'DisplayOptions':{
                 #        'Order':11,
@@ -111,16 +111,16 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                 #    }
                 #},
                 #{'Key':'TemperatureCalibration'},
-                {'Key':'Grading',
-                    'DisplayOptions':{
-                        'Show':False,
-                    }
-                },
-                {'Key':'Summary',
-                    'DisplayOptions':{
-                        'Order':8,
-                    }
-                },
+                # {'Key':'Grading',
+                #     'DisplayOptions':{
+                #         'Show':False,
+                #     }
+                # },
+                # {'Key':'Summary',
+                #     'DisplayOptions':{
+                #         'Order':8,
+                #     }
+                # },
 
 
             ]
