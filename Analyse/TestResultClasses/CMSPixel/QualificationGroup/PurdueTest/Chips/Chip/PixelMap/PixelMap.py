@@ -8,7 +8,6 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         self.Name='CMSPixel_QualificationGroup_PurdueTest_Chips_Chip_PixelMap_TestResult'
         self.NameSingle='PixelMap'
         self.Attributes['TestedObjectType'] = 'CMSPixel_QualificationGroup_PurdueTest_ROC'
-        self.verbose = True
         self.DeadPixelList = set()
         self.Noisy1PixelList = set()
         self.MaskDefectList = set()
