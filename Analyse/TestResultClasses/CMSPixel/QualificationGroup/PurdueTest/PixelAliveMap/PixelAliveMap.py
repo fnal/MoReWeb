@@ -1,6 +1,7 @@
 import ROOT
 import AbstractClasses
 import ROOT
+from FPIXUtils.moduleSummaryPlottingTools import *
 class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
     def CustomInit(self):
         self.Name='CMSPixel_QualificationGroup_Purduetest_Chips_Chip_PixelAliveMap_TestResult'
@@ -16,35 +17,57 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         yBins = 2 * self.nRows + 1
         self.ResultData['Plot']['ROOTObject'] = ROOT.TH2D(self.GetUniqueID(), "", xBins, 0., xBins, yBins, 0., yBins);  
 
+        plots = [] 
         for i in self.ParentObject.ResultData['SubTestResults']['Chips'].ResultData['SubTestResults']:
             ChipTestResultObject = self.ParentObject.ResultData['SubTestResults']['Chips'].ResultData['SubTestResults'][i]
             #print ChipTestResultObject.ResultData['SubTestResults']['PixelMap']
             #.ResultData['KeyValueDictPairs'][ 'DeadPixels']
             
 
-            deadPixels = ChipTestResultObject.ResultData['SubTestResults']['PixelMap'].ResultData['KeyValueDictPairs']['DeadPixels']
+            #deadPixels = ChipTestResultObject.ResultData['SubTestResults']['PixelMap'].ResultData['KeyValueDictPairs']['DeadPixels']
             histo = ChipTestResultObject.ResultData['SubTestResults']['PixelMap'].ResultData['Plot']['ROOTObject']
-            
+            print histo
+            plots.append(histo)
             if not histo:
                 print 'cannot get PixelMap histo for chip ',ChipTestResultObject.Attributes['ChipNo']
                 continue
-            chipNo = ChipTestResultObject.Attributes['ChipNo']
-            for col in range(self.nCols):  # Columns
-                for row in range(self.nRows):  # Rows
-                    result = histo.GetBinContent(col + 1, row + 1)
-                    self.UpdatePlot(chipNo, col, row, result)
-        if self.ResultData['Plot']['ROOTObject']:
-            self.ResultData['Plot']['ROOTObject'].SetTitle("");
-            self.ResultData['Plot']['ROOTObject'].Draw('colz');
-            self.ResultData['Plot']['ROOTObject'].GetZaxis().SetRangeUser(0, 1);
-            self.ResultData['Plot']['ROOTObject'].GetXaxis().SetTitle("Column No.");
-            self.ResultData['Plot']['ROOTObject'].GetYaxis().SetTitle("Row No.");
-            self.ResultData['Plot']['ROOTObject'].GetXaxis().CenterTitle();
-            self.ResultData['Plot']['ROOTObject'].GetYaxis().SetTitleOffset(1.5);
-            self.ResultData['Plot']['ROOTObject'].GetYaxis().CenterTitle();
-            #self.ResultData['Plot']['ROOTObject'].GetZaxis().SetTitle("#Delta Threshold [DAC]");
-            self.ResultData['Plot']['ROOTObject'].GetZaxis().CenterTitle();
-            self.ResultData['Plot']['ROOTObject'].Draw('colz');
+            # chipNo = ChipTestResultObject.Attributes['ChipNo']
+            # for col in range(self.nCols):  # Columns
+            #     for row in range(self.nRows):  # Rows
+            #         result = histo.GetBinContent(col + 1, row + 1)
+            #         self.UpdatePlot(chipNo, col, row, result)
+
+        print plots
+        summaryPlot = makeMergedPlot(plots)
+        zRange = findZRange(plots)
+        setZRange(summaryPlot,zRange)
+        self.Canvas = setupSummaryCanvas(summaryPlot)
+        
+        # exit()
+        # if self.ResultData['Plot']['ROOTObject']:
+        #     self.ResultData['Plot']['ROOTObject'].SetTitle("");
+        #     #self.ResultData['Plot']['ROOTObject'].Draw('colz');
+        #     self.ResultData['Plot']['ROOTObject'].GetZaxis().SetRangeUser(0, 10);
+        #     self.ResultData['Plot']['ROOTObject'].GetXaxis().SetTitle("Column No.");
+        #     self.ResultData['Plot']['ROOTObject'].GetYaxis().SetTitle("Row No.");
+        #     self.ResultData['Plot']['ROOTObject'].GetXaxis().CenterTitle();
+        #     self.ResultData['Plot']['ROOTObject'].GetYaxis().SetTitleOffset(1.5);
+        #     self.ResultData['Plot']['ROOTObject'].GetYaxis().CenterTitle();
+        #     #self.ResultData['Plot']['ROOTObject'].GetZaxis().SetTitle("#Delta Threshold [DAC]");
+        #     self.ResultData['Plot']['ROOTObject'].GetZaxis().CenterTitle();
+        #     self.ResultData['Plot']['ROOTObject'].Draw('colz');
+        #     # text1 = ROOT.TPaveText(20, 40, 80, 80)
+        #     # text1.AddText('TEST Message')
+        #     # text1.Draw()
+        #     #self.Canvas.Update()
+        #     self.Canvas = setupSummaryCanvas(self.ResultData['Plot']['ROOTObject'])
+            # axisLabels = get_axisLabels()
+            # for label in axisLabels:
+            #     label.SetFillColor(0)
+            #     label.SetTextAlign(22)
+            #     label.SetTextFont(42)
+            #     label.SetBorderSize(0)
+            #     label.Draw()
 
 
         boxes = []
