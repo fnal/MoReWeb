@@ -26,7 +26,9 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
             #deadPixels = ChipTestResultObject.ResultData['SubTestResults']['PixelMap'].ResultData['KeyValueDictPairs']['DeadPixels']
             histo = ChipTestResultObject.ResultData['SubTestResults']['PixelMap'].ResultData['Plot']['ROOTObject']
-            print histo
+            chipNo = ChipTestResultObject.Attributes['ChipNo']
+            histoName = 'PixelAlive_ROC%s' %chipNo
+            histo.SetName(histoName)
             plots.append(histo)
             if not histo:
                 print 'cannot get PixelMap histo for chip ',ChipTestResultObject.Attributes['ChipNo']
@@ -37,7 +39,6 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             #         result = histo.GetBinContent(col + 1, row + 1)
             #         self.UpdatePlot(chipNo, col, row, result)
 
-        print plots
         summaryPlot = makeMergedPlot(plots)
         zRange = findZRange(plots)
         setZRange(summaryPlot,zRange)
