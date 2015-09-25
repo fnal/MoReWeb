@@ -81,7 +81,8 @@ def makeMergedPlot(plots):
         moduleBinEdgesY.append(2 * ROC_PLOT_SIZE - edge)
 
     # create clone of plot with new bin sizes
-    plotName = plots[0].GetName().rstrip("0")
+    #plotName = plots[0].GetName().rstrip("0")
+    plotName = plots[0].GetName()+'_Merged' # avoid potential memory leak 
     summaryPlot = TH2D(plotName,
                        "",
                        len(moduleBinEdgesX)-1,
