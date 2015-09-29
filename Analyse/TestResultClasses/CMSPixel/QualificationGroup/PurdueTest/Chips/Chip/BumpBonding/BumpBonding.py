@@ -21,7 +21,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         nBumpBondingProblems = 0;
         nSigma = self.TestResultEnvironmentObject.GradingParameters['BumpBondingProblemsNSigma']
         thr=0
-        # TH1D
+        # TH2D rescaledThr_C%d_V0 
         ChipNo=self.ParentObject.Attributes['ChipNo']
         self.HistoDict = self.ParentObject.ParentObject.ParentObject.HistoDict
         try:
@@ -32,6 +32,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             histname = self.ParentObject.ParentObject.ParentObject.HistoDict.get(self.NameSingle,'Digital')
             object = HistoGetter.get_histo(self.ParentObject.ParentObject.FileHandle, histname, rocNo = ChipNo)
             self.ResultData['Plot']['ROOTObject']  = object.Clone(self.GetUniqueID())
+
         if self.ResultData['Plot']['ROOTObject']:
             self.Canvas.Clear()
             self.ResultData['Plot']['ROOTObject'].SetTitle("");
