@@ -21,7 +21,6 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         nBumpBondingProblems = 0;
         nSigma = self.TestResultEnvironmentObject.GradingParameters['BumpBondingProblemsNSigma']
         thr=0
-        # TH2D rescaledThr_C%d_V0 
         ChipNo=self.ParentObject.Attributes['ChipNo']
         self.HistoDict = self.ParentObject.ParentObject.ParentObject.HistoDict
         try:
