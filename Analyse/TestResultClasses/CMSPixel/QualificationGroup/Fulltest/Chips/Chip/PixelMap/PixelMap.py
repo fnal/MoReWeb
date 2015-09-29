@@ -15,8 +15,18 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         self.IneffPixelList = set()
         self.chipNo = self.ParentObject.Attributes['ChipNo']
 
+        self.PixelMapMaxValue = self.TestResultEnvironmentObject.GradingParameters['PixelMapMaxValue']
+        self.PixelMapMinValue = self.TestResultEnvironmentObject.GradingParameters['PixelMapMinValue']
 
     def PopulateResultData(self):
+        try:
+            if self.ParentObject.ParentObject.ParentObject.nTrigPixelAlive:
+                if self.ParentObject.ParentObject.ParentObject.nTrigPixelAlive != self.PixelMapMaxValue:
+                    print "PixelAliveMap: ntrig = %d from testParameters.dat is used instead of value from gradingParameters.cfg"%self.ParentObject.ParentObject.ParentObject.nTrigPixelAlive
+                self.PixelMapMaxValue = self.ParentObject.ParentObject.ParentObject.nTrigPixelAlive
+        except:
+            pass
+
         ROOT.gStyle.SetOptStat(0)
         ROOT.gPad.SetLogy(0)
         # TH2D
@@ -62,6 +72,9 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             self.ResultData['Plot']['ROOTObject'].Draw('colz');
 
         self.Title = 'Pixel Map: C{ChipNo}'.format(ChipNo=self.ParentObject.Attributes['ChipNo'])
+        if self.Canvas:
+            self.Canvas.SetCanvasSize(500, 500)
+        self.ResultData['Plot']['Format'] = 'png'
         self.SaveCanvas()        
     def CheckPixelAlive(self):
         for column in range(self.nCols): #Column
@@ -97,7 +110,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         return False
 
     def IsNoisyPixel(self,column, row, PixelMapCurrentValue):
-        if PixelMapCurrentValue  > self.TestResultEnvironmentObject.GradingParameters['PixelMapMaxValue']:
+        if PixelMapCurrentValue  > self.PixelMapMaxValue:
             self.Noisy1PixelList.add((self.chipNo,column,row))
             return True
         return False
@@ -114,7 +127,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         return False
 
     def IsInefficientPixel(self,column,row,PixelMapCurrentValue):
-        if PixelMapCurrentValue  < self.TestResultEnvironmentObject.GradingParameters['PixelMapMinValue']:
+        if PixelMapCurrentValue  < self.PixelMapMinValue:
             self.IneffPixelList.add((self.chipNo,column,row))
             return True
         return False

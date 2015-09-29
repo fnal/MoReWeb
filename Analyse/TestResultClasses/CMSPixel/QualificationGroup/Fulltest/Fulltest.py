@@ -269,8 +269,31 @@ class TestResult(GeneralTestResult):
 
         # find pxar logfile of fulltest
         logfilePath = ("%s.log"%fileHandlePath[:-5]) if len(fileHandlePath) > 4 else ''
+        self.trimVcal = None
+        self.pxarVersion = None
         if os.path.isfile(logfilePath):
             self.logfilePath = logfilePath
+            try:
+                with open(logfilePath, 'r') as logFile:
+                    for line in logFile:
+                        if 'PixTestTrim::trimTest()' in line and 'vcal' in line:
+                            posVcal = line.find('vcal')
+                            if posVcal >=0:
+                                posEqSign = line.find('=', posVcal)
+                                if posEqSign >= 0:
+                                    trimVcal = line[posEqSign+1:].split(',')[0]
+                                    try:
+                                        self.trimVcal = int(trimVcal)
+                                        print "-> Trimmed to Vcal %d"%self.trimVcal
+                                    except:
+                                        pass
+                        if 'Instanciating API for pxar' in line:
+                            posPxar = line.find('pxar')
+                            if posPxar >=0:
+                                self.pxarVersion = line[posPxar + 5:] if len(line) > posPxar + 5 else '?'
+            except:
+                pass
+
         else:
             files = [f for f in os.listdir(self.RawTestSessionDataPath) if f.endswith('.log')]
             if len(files) == 1:
@@ -278,6 +301,28 @@ class TestResult(GeneralTestResult):
             else:
                 print "either no or multiple .log files found! some features are not available. Please name the .log file the same as the .root file to avoid ambiguousness if more than 1 logfiles are present in the folder."
                 self.logfilePath = None
+
+        # find testParameters.dat
+        try:
+            testParametersPath = self.RawTestSessionDataPath + '/testParameters.dat'
+            if os.path.isfile(logfilePath):
+                self.testParametersPath = testParametersPath
+
+                testParametersSection = ''
+                with open(testParametersPath, 'r') as testParametersFile:
+                    for line in testParametersFile:
+                        if line.strip()[0:2] == '--':
+                            testParametersSection = line.strip().split(" ")[1].strip()
+                        if testParametersSection.lower() == 'pixelalive' and line.strip().split(" ")[0].strip().lower() == 'ntrig':
+                            self.nTrigPixelAlive = int(line.strip().split(" ")[-1])
+                            break
+
+            else:
+                self.testParametersPath = None
+                self.nTrigPixelAlive = None
+        except:
+            self.nTrigPixelAlive = None
+            pass
 
     def PopulateResultData(self):
         if self.FileHandle:
