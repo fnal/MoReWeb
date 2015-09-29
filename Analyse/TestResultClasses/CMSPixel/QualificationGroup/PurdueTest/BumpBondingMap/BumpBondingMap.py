@@ -17,7 +17,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         plots = []
         for i in self.ParentObject.ResultData['SubTestResults']['Chips'].ResultData['SubTestResults']:
             ChipTestResultObject = self.ParentObject.ResultData['SubTestResults']['Chips'].ResultData['SubTestResults'][i]
-            histo = ChipTestResultObject.ResultData['SubTestResults']['BumpBonding'].ResultData['Plot']['ROOTObject']
+            histo = ChipTestResultObject.ResultData['SubTestResults']['BumpBondingProblems'].ResultData['Plot']['ROOTObject']
             if not histo:
                 print 'cannot get PixelMap histo for chip ',ChipTestResultObject.Attributes['ChipNo']
                 continue
