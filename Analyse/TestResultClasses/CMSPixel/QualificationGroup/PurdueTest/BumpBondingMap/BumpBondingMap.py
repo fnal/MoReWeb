@@ -1,6 +1,7 @@
 import ROOT
 import AbstractClasses
 import ROOT
+from ROOT import kRed, gStyle
 from FPIXUtils.moduleSummaryPlottingTools import *
 
 class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
@@ -25,9 +26,21 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             histo.SetName(histoName)
             plots.append(histo)
 
+        # sort the plot from ROC0 to ROC15, in order to be used for merging
+        plots = sorted(plots, key=lambda h:int(h.GetName().split('ROC')[1]))
         summaryPlot = makeMergedPlot(plots)
         zRange = findZRange(plots)
         setZRange(summaryPlot,zRange)
+
+        colors = array("i",[51+i for i in range(40)] + [kRed])
+        gStyle.SetPalette(len(colors), colors);
+        zMin=summaryPlot.GetMinimum()
+        zMax=summaryPlot.GetMaximum()
+        step=(zMax-zMin)/(len(colors)-1)
+        levels = array('d',[zMin + i*step for i in range(len(colors)-1)]+[4.9999999])
+
+        summaryPlot.SetContour(len(levels),levels)
+        
         self.Canvas = setupSummaryCanvas(summaryPlot)
 
         self.ResultData['Plot']['Format'] = 'png'
