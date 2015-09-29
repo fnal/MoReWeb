@@ -22,18 +22,8 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         # TH2D
         ChipNo=self.ParentObject.Attributes['ChipNo']
         self.HistoDict = self.ParentObject.ParentObject.ParentObject.HistoDict
-
-
-        try:
-            histname = self.HistoDict.get(self.NameSingle,'Analog')
-            self.ResultData['Plot']['ROOTObject'] =  HistoGetter.get_histo(self.ParentObject.ParentObject.FileHandle,histname,rocNo=ChipNo).Clone(self.GetUniqueID())
-        except:
-            histname = self.HistoDict.get(self.NameSingle,'Digital')
-            self.ResultData['Plot']['ROOTObject'] =  HistoGetter.get_histo(self.ParentObject.ParentObject.FileHandle,histname,rocNo=ChipNo).Clone(self.GetUniqueID())
-#             if not isDigitalROC:
-#                 print "ERROR Cannot find vcals_xtal_CXXX but is analog Module..."
-#             elif isDigitalROC:
-#                 print "ERROR: FOound vcals_xtal_CXXX but is digital Module..."
+        histname = self.HistoDict.get(self.NameSingle,'Digital')
+        self.ResultData['Plot']['ROOTObject'] =  HistoGetter.get_histo(self.ParentObject.ParentObject.FileHandle,histname,rocNo=ChipNo).Clone(self.GetUniqueID())
 
         threshold = self.CheckBumpBondingProblems()
 
