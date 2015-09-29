@@ -26,6 +26,9 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             histo.SetName(histoName)
             plots.append(histo)
 
+        # sort the plot from ROC0 to ROC15, in order to be used for merging
+        plots = sorted(plots, key=lambda h:int(h.GetName().split('ROC')[1]))
+               
         summaryPlot = makeMergedPlot(plots)
         zRange = findZRange(plots)
         setZRange(summaryPlot,zRange)
