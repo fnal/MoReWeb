@@ -53,14 +53,14 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                 #},# depends on
                 {'Key':'BumpBonding',
                     'DisplayOptions':{
+                        'Order':5,
+                    }
+                },
+                {'Key':'BumpBondingProblems',
+                    'DisplayOptions':{
                         'Order':6,
                     }
                 },
-                # {'Key':'BumpBondingProblems',
-                #     'DisplayOptions':{
-                #         'Order':5,
-                #     }
-                # },
                 #{'Key':'TrimBitTest',
                 #    'DisplayOptions':{
                 #        'Order':7,
