@@ -78,21 +78,23 @@ class TestResult(GeneralTestResult):
                 }
             },
 
+ 
+            {
+               'Key': 'VcalThreshold',
+               'DisplayOptions': {
+                   'Width': 4,
+                   'Order': 3,
+               }
+            },
+
             {
                 'Key': 'BumpBondingMap',
                 'DisplayOptions': {
                     'Width': 4,
-                    'Order': 5,
+                    'Order': 4,
                 }
             },
 
-            #{
-            #    'Key': 'VcalThreshold',
-            #    'DisplayOptions': {
-            #        'Width': 4,
-            #        'Order': 3,
-            #    }
-            #},
         ]
         # self.ResultData['SubTestResultDictList'].append({'Key': 'Temperature'})
         # if not self.Attributes['isDigital']:

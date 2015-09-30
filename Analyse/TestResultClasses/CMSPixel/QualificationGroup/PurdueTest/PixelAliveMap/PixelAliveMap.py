@@ -38,7 +38,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
         if self.SavePlotFile:
             self.Canvas.SaveAs(self.GetPlotFileName())
-        print 'Saved ', self.GetPlotFileName()
+            print 'Saved ', self.GetPlotFileName()
         self.ResultData['Plot']['Enabled'] = 1
         self.Title = 'Pixel Alive Map'
         self.ResultData['Plot']['ImageFile'] = self.GetPlotFileName()

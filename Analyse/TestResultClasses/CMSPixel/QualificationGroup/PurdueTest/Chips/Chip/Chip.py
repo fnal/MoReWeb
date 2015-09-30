@@ -46,11 +46,11 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                 #        'Order':3,
                 #    }
                 #},# depends on SCurveWidths'''
-                #{'Key':'VcalThresholdTrimmed',
-                #    'DisplayOptions':{
-                #        'Order':4,
-                #    }
-                #},# depends on
+                {'Key':'VcalThresholdTrimmed',
+                   'DisplayOptions':{
+                       'Order':4,
+                   }
+                },# depends on
                 {'Key':'BumpBonding',
                     'DisplayOptions':{
                         'Order':5,
