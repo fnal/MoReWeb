@@ -1,15 +1,17 @@
 #!/usr/bin/env python
  # -*- coding: utf-8 -*-
-from AbstractClasses import GeneralTestResult, TestResultEnvironment, ModuleResultOverview, GeneralProductionOverview
+from AbstractClasses import PresentationMaker, GeneralTestResult, TestResultEnvironment, ModuleResultOverview, GeneralProductionOverview, GetValuesForSummaryPresentation
 import AbstractClasses.Helper.hasher as hasher
 import argparse
 # from AbstractClasses import Helper
 import TestResultClasses.CMSPixel.QualificationGroup.QualificationGroup
 from OverviewClasses.CMSPixel.ProductionOverview import ProductionOverview
-import os, time,shutil, sys
+from OverviewClasses.CMSPixel.ProductionOverview.ProductionOverviewPage.GradingOverview import GradingOverview
+import os, time,shutil, sys,traceback
 # import errno
 import ConfigParser
 import datetime
+import subprocess
 
 #arg parse to analyse a single Fulltest
 parser = argparse.ArgumentParser(description='MORE web Controller: an analysis software for CMS pixel modules and ROCs')
@@ -48,6 +50,8 @@ parser.add_argument('-p', '--production-overview', dest = 'production_overview',
                     help = 'Creates production overview page in the end')
 parser.add_argument('-new', '--new-folders-only', dest = 'no_re_analysis', action = 'store_true', default = False,
                     help = 'Do not analyze folder if it already exists in DB, even if MoReWeb version has changed')
+parser.add_argument('-pres', '--make-presentation', dest = 'make_presentation', action = 'store_true', default = False,
+                    help = 'Creates tex file for presentation in the end')
 
 parser.set_defaults(DBUpload=True)
 args = parser.parse_args()
@@ -58,6 +62,21 @@ import AbstractClasses.Helper.ROOTConfiguration as ROOTConfiguration
 
 ROOTConfiguration.initialise_ROOT()
 Configuration = ConfigParser.ConfigParser()
+
+if not os.path.isfile('Configuration/Paths.cfg'):
+    print "error: The config file 'Configuration/Paths.cfg' was not found, copy it from 'Configuration/Paths.cfg.default' and adjust the paths!"
+    exit()
+
+
+if not os.path.isfile('Configuration/ProductionOverview.cfg'):
+    print "info: The config file 'Configuration/ProductionOverview.cfg' was not found, it will be automatically created with default settings!"
+    try:
+        shutil.copy('Configuration/ProductionOverview.cfg.default', 'Configuration/ProductionOverview.cfg')
+        print " => done!"
+    except:
+        print " => failed! try to create 'Configuration/ProductionOverview.cfg' manually and run MoReWeb again!"
+        exit()
+
 Configuration.read([
     'Configuration/GradingParameters.cfg',
     'Configuration/SystemConfiguration.cfg',
@@ -476,7 +495,11 @@ if args.deleterow:
         print "  ", 'ID'.ljust(6),  ' TestDate'.ljust(25),  'QualificationType'.ljust(30), 'TestType'.ljust(30), 'Grade'.ljust(3), 'Comments'.ljust(30)
         RowID = 0
         for Row in Rows:
-            print " ", "\x1b[31m", ("%d"%RowID).ljust(6), "\x1b[0m", datetime.datetime.fromtimestamp(int(Row['TestDate'])).strftime('%Y-%m-%d %H:%M:%S').ljust(25), Row['QualificationType'].ljust(30), Row['TestType'].ljust(30), ("%s"%Row['Grade']).ljust(3), ("%s"%Row['Comments']).ljust(30)
+            try:
+                TestDate = datetime.datetime.fromtimestamp(int(Row['TestDate'])).strftime('%Y-%m-%d %H:%M:%S')
+            except:
+                TestDate = "INVALID: " + repr(Row['TestDate'])
+            print " ", "\x1b[31m", ("%d"%RowID).ljust(6), "\x1b[0m", TestDate.ljust(25), Row['QualificationType'].ljust(30), Row['TestType'].ljust(30), ("%s"%Row['Grade']).ljust(3), ("%s"%Row['Comments']).ljust(30)
             RowID += 1
 
         RowIDs = raw_input("Select rows (separated by comma): ")
@@ -499,7 +522,11 @@ if args.deleterow:
             for RowID in RowIDsList:
                 if Rows[RowID]:
                     Row = Rows[RowID]
-                    print "delete? ", ("%d"%RowID), datetime.datetime.fromtimestamp(int(Row['TestDate'])).strftime('%Y-%m-%d %H:%M:%S'), Row['QualificationType'], Row['TestType'], ("%s"%Row['Grade']), ("%s"%Row['Comments'])
+                    try:
+                        TestDate = datetime.datetime.fromtimestamp(int(Row['TestDate'])).strftime('%Y-%m-%d %H:%M:%S')
+                    except:
+                        TestDate = "INVALID: " + repr(Row['TestDate'])
+                    print "delete? ", ("%d"%RowID), TestDate, Row['QualificationType'], Row['TestType'], ("%s"%Row['Grade']), ("%s"%Row['Comments'])
                     confirmation = raw_input("(y/N)")
                     if confirmation.lower().strip() == 'y':
                         result = TestResultEnvironmentInstance.LocalDBConnectionCursor.execute( 
@@ -517,7 +544,13 @@ if args.deleterow:
                             print "no connection to local db!"
 
 # test analysis
-if not args.deleterow and not args.comment:
+if not args.deleterow and not args.comment and not args.production_overview and not args.make_presentation:
+
+    # prepare test analysis
+    #  database migrations
+    
+
+    # run test analysis
     if not args.singleFulltestPath=='':
         AnalyseSingleFullTest(args.singleFulltestPath)
     elif not args.singleQualificationPath=='':
@@ -536,6 +569,31 @@ if args.production_overview:
     print "production overview:"
     ProductionOverviewObject = ProductionOverview.ProductionOverview(TestResultEnvironmentInstance)
     ProductionOverviewObject.GenerateOverview()
+
+    if args.make_presentation:
+        print "presentation maker: collecting data..."
+        Summary = PresentationMaker.MakeProductionSummary()
+        GetInfo = GetValuesForSummaryPresentation.ModuleSummaryValues(TestResultEnvironmentInstance)
+        values = GetInfo.MakeArray()
+        print "presentation maker: write tex file..."
+        try:
+            Summary.MakeTexFile(values)
+            print "done."
+        except:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            # Start red color
+            sys.stdout.write("\x1b[31m")
+            sys.stdout.flush()
+            # Print error message
+            print "Could not produce tex file for Presentation!"
+            # Print traceback
+            traceback.print_exception(exc_type, exc_obj, exc_tb)
+            # Stop red color
+            sys.stdout.write("\x1b[0m")
+            sys.stdout.flush()
+
+
+
 
 # display error list
 print '\nErrorList:'
