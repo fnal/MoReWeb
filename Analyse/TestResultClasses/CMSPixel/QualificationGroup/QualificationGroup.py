@@ -193,8 +193,8 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             elif 'powercycle' in test.testname:
                 test = test.next()
             elif 'fpixtest' in test.testname.lower():
-                print '\t-> appendFPIXTest'
-                tests, test, index = self.appendFPIXTest(tests, test, index)
+                print '\t-> appendFulltest'
+                tests, test, index = self.appendFulltest(tests, test, index)
             elif 'purduetest' in test.testname.lower():
                 print '\t-> appendPurduetest'
                 tests, test, index = self.appendPurduetest(tests, test, index)
@@ -357,7 +357,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             #            print '\tFound corresponding', test.testname, test.environment
             tests[-1]['InitialAttributes']['IncludeIVCurve'] = True
             tests[-1]['InitialAttributes']['IVCurveSubDirectory'] = '%03d_%s_%s' % (
-            index, test.testname, test.environment.name)
+            index, test.testname.split("_")[0], test.environment.name)
 
             if test.environment.name not in self.TestResultEnvironmentObject.IVCurveFiles:
                 self.TestResultEnvironmentObject.IVCurveFiles[test.environment.name] = []
@@ -401,7 +401,6 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         index += 1
         if test and 'IV' in test.testname and test.environment.name == environment.name:
             #            print '\tFound corresponding', test.testname, test.environment
-            test.testname = 'IV'
             tests[-1]['InitialAttributes']['IncludeIVCurve'] = True
             tests[-1]['InitialAttributes']['IVCurveSubDirectory'] = '%03d_%s_%s' % (
             index, test.testname, test.environment.name)
