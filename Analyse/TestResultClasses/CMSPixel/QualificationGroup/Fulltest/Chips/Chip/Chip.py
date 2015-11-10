@@ -23,11 +23,11 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                         'Order':1,
                     }
                 },
-                # {'Key':'VcalThresholdTrimmed',
-                #  'DisplayOptions':{
-                #      'Order':4,
-                #  }
-                # },# depends on
+                {'Key':'VcalThresholdTrimmed',
+                 'DisplayOptions':{
+                     'Order':4,
+                 }
+                },# depends on
                 {'Key':'BumpBonding',
                  'DisplayOptions':{
                      'Order':5,

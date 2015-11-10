@@ -63,11 +63,15 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
         under = self.ResultData['Plot']['ROOTObject'].GetBinContent(0)
         over = self.ResultData['Plot']['ROOTObject'].GetBinContent(self.ResultData['Plot']['ROOTObject'].GetNbinsX()+1)
-
-        if self.ParentObject.ResultData['SubTestResults']['OpParameters'].ResultData['HiddenData'].has_key('vcalTrim'):
-            self.vcalTrim = self.ParentObject.ResultData['SubTestResults']['OpParameters'].ResultData['HiddenData']['vcalTrim']
-        else:
-            self.vcalTrim = 0
+        self.vcalTrim = 0
+        try: 
+            if self.ParentObject.ResultData['SubTestResults']['OpParameters'].ResultData['HiddenData'].has_key('vcalTrim'):
+                self.vcalTrim = self.ParentObject.ResultData['SubTestResults']['OpParameters'].ResultData['HiddenData']['vcalTrim']
+            # else:
+            #     self.vcalTrim = 0
+        except KeyError:
+            pass
+            
         if self.vcalTrim < 0:
             self.vcalTrim = 0
         maxDiff = self.TestResultEnvironmentObject.GradingParameters['tthrTol']

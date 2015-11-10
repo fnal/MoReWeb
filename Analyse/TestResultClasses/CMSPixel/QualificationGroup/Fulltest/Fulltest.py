@@ -60,13 +60,13 @@ class TestResult(GeneralTestResult):
                         'Order': 2,
                     }
                 },
-                # {
-                #     'Key': 'VcalThreshold',
-                #     'DisplayOptions': {
-                #         'Width': 4,
-                #         'Order': 3,
-                #     }
-                # },
+                {
+                    'Key': 'VcalThreshold',
+                    'DisplayOptions': {
+                        'Width': 4,
+                        'Order': 3,
+                    }
+                },
                 {
                     'Key': 'BumpBondingMap',
                     'DisplayOptions': {
