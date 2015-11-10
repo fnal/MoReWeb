@@ -14,6 +14,34 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         # order!
         self.ResultData['SubTestResultDictList'] = []
 
+        if self.ParentObject.ParentObject.ParentObject.Attributes['QualificationType'] == 'PurdueTest':
+            print 'In Chips Parsing PurdueTest ...'
+            self.ResultData['SubTestResultDictList'] += [
+                {
+                    'Key':'PixelMap',
+                    'DisplayOptions':{
+                        'Order':1,
+                    }
+                },
+                # {'Key':'VcalThresholdTrimmed',
+                #  'DisplayOptions':{
+                #      'Order':4,
+                #  }
+                # },# depends on
+                # {'Key':'BumpBonding',
+                #  'DisplayOptions':{
+                #      'Order':5,
+                #  }
+                # },
+                # {'Key':'BumpBondingProblems',
+                # 'DisplayOptions':{
+                #     'Order':6,
+                # }
+                # },
+            ]
+            return
+
+        
         if self.Attributes['ModuleVersion'] == 1:
             self.ResultData['SubTestResultDictList'] += [
                 {
