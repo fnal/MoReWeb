@@ -67,13 +67,13 @@ class TestResult(GeneralTestResult):
                 #         'Order': 3,
                 #     }
                 # },
-                # {
-                #     'Key': 'BumpBondingMap',
-                #     'DisplayOptions': {
-                #         'Width': 4,
-                #         'Order': 4,
-                #     }
-                # },
+                {
+                    'Key': 'BumpBondingMap',
+                    'DisplayOptions': {
+                        'Width': 4,
+                        'Order': 4,
+                    }
+                },
             ]
             return 
         
