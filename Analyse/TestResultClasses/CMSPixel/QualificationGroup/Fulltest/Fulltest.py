@@ -42,7 +42,7 @@ class TestResult(GeneralTestResult):
                 print "\t%25s:  %s" % (name, value)
 
         if self.ParentObject.Attributes['QualificationType'] == 'PurdueTest':
-            print 'Parsing PurdueTest ...'
+            #print 'Parsing PurdueTest ...'
             self.ResultData['SubTestResultDictList'] = [
                 {  'Key': 'Chips',
                    'DisplayOptions': {
@@ -65,14 +65,20 @@ class TestResult(GeneralTestResult):
                     'DisplayOptions': {
                         'Width': 4,
                         'Order': 3,
-                    }
+                    },
+                   'InitialAttributes': {
+                       'QualificationType': 'PurdueTest',
+                   }
                 },
                 {
                     'Key': 'BumpBondingMap',
                     'DisplayOptions': {
                         'Width': 4,
                         'Order': 4,
-                    }
+                    },
+                   'InitialAttributes': {
+                       'QualificationType': 'PurdueTest',
+                   }
                 },
             ]
             return 
