@@ -63,7 +63,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                 SubGrading.append('%d' % ChipGrade)
 
                 ChipGradeMean = ChipGradingTestResultObject.GetSingleChipSubtestGrade(
-                    TestResultObject.Attributes['SpecialPopulateDataParameters'], 1, False)
+                    TestResultObject.Attributes['SpecialPopulateDataParameters'], 1)
                 self.ResultData['HiddenData']['SubGrading_%s_Mean_C%d'%(i, j['TestResultObject'].Attributes["ChipNo"])] = {'Label': 'Subgrade', 'Value': ChipGradeMean}
 
                 ModuleGrade = ChipGradingTestResultObject.GetSingleChipSubtestGrade(
@@ -102,8 +102,6 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             #    grading is only done with the measured value at +17
             if self.ParentObject.Attributes['TestType'].startswith('p17_'):
                 if IVGrade == 1 and CurrentVariation > self.TestResultEnvironmentObject.GradingParameters['slopeivB']:
-                    IVGrade = 2
-                if CurrentVariation > self.TestResultEnvironmentObject.GradingParameters['slopeivC']:
                     IVGrade = 3
 
             # ratio +17/-20
