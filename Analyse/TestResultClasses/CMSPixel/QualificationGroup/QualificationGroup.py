@@ -49,29 +49,29 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                     }
                 },
             ]
-        elif self.Attributes['TestType'] == 'purduetest':
-            print 'add purduetest subTestResults'
-            self.ResultData['SubTestResultDictList'] = [
-                {
-                    'Key': 'purduetest',
-                    'Module': 'PurdueTest',
-                    'InitialAttributes': {
-                        'StorageKey': 'Purduetest_p17_1',
-                        'TestResultSubDirectory': '.',
-                        'IncludeIVCurve': False,
-                        'IVCurveSubDirectory': '',
-                        'ModuleID': self.Attributes['ModuleID'],
-                        'ModuleVersion': self.Attributes['ModuleVersion'],
-                        'ModuleType': self.Attributes['ModuleType'],
-                        'TestType': 'p17',
-                        'TestTemperature': 17,
-                        'ChipNo': 0,
-                    },
-                    'DisplayOptions': {
-                        'Order': 1
-                    }
-                },
-            ]
+        # elif self.Attributes['TestType'] == 'purduetest':
+        #     print 'add purduetest subTestResults'
+        #     self.ResultData['SubTestResultDictList'] = [
+        #         {
+        #             'Key': 'purduetest',
+        #             'Module': 'PurdueTest',
+        #             'InitialAttributes': {
+        #                 'StorageKey': 'Purduetest_p17_1',
+        #                 'TestResultSubDirectory': '.',
+        #                 'IncludeIVCurve': False,
+        #                 'IVCurveSubDirectory': '',
+        #                 'ModuleID': self.Attributes['ModuleID'],
+        #                 'ModuleVersion': self.Attributes['ModuleVersion'],
+        #                 'ModuleType': self.Attributes['ModuleType'],
+        #                 'TestType': 'p17',
+        #                 'TestTemperature': 17,
+        #                 'ChipNo': 0,
+        #             },
+        #             'DisplayOptions': {
+        #                 'Order': 1
+        #             }
+        #         },
+        #     ]
         elif self.Attributes['TestType'] == 'bareModuletest':
             print 'add bareModuletest subTestResults'
             self.ResultData['SubTestResultDictList'] = [
@@ -196,8 +196,8 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                 print '\t-> appendFulltest'
                 tests, test, index = self.appendFulltest(tests, test, index)
             elif 'purduetest' in test.testname.lower():
-                print '\t-> appendPurduetest'
-                tests, test, index = self.appendPurduetest(tests, test, index)
+                print '\t-> appendFulltest'
+                tests, test, index = self.appendFulltest(tests, test, index)
             elif 'pretest' in test.testname.lower():
                 print '\t-> appendPretest'
                 # skips the pretest, not a high priority to parse
@@ -408,45 +408,45 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             index += 1
         return tests, test, index
 
-    def appendPurduetest(self, tests, test, index):
-        #        print  '%03d'%index, test.testname, test.environment
-        environment = test.environment
-        key = 'Module%s_%s' % (test.testname, test.environment.name)
-        nKeys = 1
-        for item in tests:
-            if item['Key'].startswith(key):
-                nKeys += 1
-        key += '_%s' % (nKeys)
-        directory = '%03d' % index + '_%s_%s' % (test.testname, test.environment.name)
-        tests.append({
-            'Key': key,
-            'Module': 'PurdueTest',
-            'InitialAttributes': {
-                'StorageKey': key,
-                'TestResultSubDirectory': directory,
-                'IncludeIVCurve': False,
-                'ModuleID': self.Attributes['ModuleID'],
-                'ModuleVersion': self.Attributes['ModuleVersion'],
-                'ModuleType': self.Attributes['ModuleType'],
-                'TestType': '%s_%s' % (test.environment.name, nKeys),
-                'TestTemperature': test.environment.temperature,
-            },
-            'DisplayOptions': {
-                'Order': len(tests) + 1
-            }
-        })
-        if test.environment.temperature != 17:
-            tests[-1]['InitialAttributes']['recalculateCurrentTo'] = 17
-        test = test.next()
-        index += 1
-        if test and 'IV' in test.testname and test.environment.name == environment.name:
-            #            print '\tFound corresponding', test.testname, test.environment
-            tests[-1]['InitialAttributes']['IncludeIVCurve'] = True
-            tests[-1]['InitialAttributes']['IVCurveSubDirectory'] = '%03d_%s_%s' % (
-            index, test.testname, test.environment.name)
-            test = test.next()
-            index += 1
-        return tests, test, index
+    # def appendPurduetest(self, tests, test, index):
+    #     #        print  '%03d'%index, test.testname, test.environment
+    #     environment = test.environment
+    #     key = 'Module%s_%s' % (test.testname, test.environment.name)
+    #     nKeys = 1
+    #     for item in tests:
+    #         if item['Key'].startswith(key):
+    #             nKeys += 1
+    #     key += '_%s' % (nKeys)
+    #     directory = '%03d' % index + '_%s_%s' % (test.testname, test.environment.name)
+    #     tests.append({
+    #         'Key': key,
+    #         'Module': 'PurdueTest',
+    #         'InitialAttributes': {
+    #             'StorageKey': key,
+    #             'TestResultSubDirectory': directory,
+    #             'IncludeIVCurve': False,
+    #             'ModuleID': self.Attributes['ModuleID'],
+    #             'ModuleVersion': self.Attributes['ModuleVersion'],
+    #             'ModuleType': self.Attributes['ModuleType'],
+    #             'TestType': '%s_%s' % (test.environment.name, nKeys),
+    #             'TestTemperature': test.environment.temperature,
+    #         },
+    #         'DisplayOptions': {
+    #             'Order': len(tests) + 1
+    #         }
+    #     })
+    #     if test.environment.temperature != 17:
+    #         tests[-1]['InitialAttributes']['recalculateCurrentTo'] = 17
+    #     test = test.next()
+    #     index += 1
+    #     if test and 'IV' in test.testname and test.environment.name == environment.name:
+    #         #            print '\tFound corresponding', test.testname, test.environment
+    #         tests[-1]['InitialAttributes']['IncludeIVCurve'] = True
+    #         tests[-1]['InitialAttributes']['IVCurveSubDirectory'] = '%03d_%s_%s' % (
+    #         index, test.testname, test.environment.name)
+    #         test = test.next()
+    #         index += 1
+    #     return tests, test, index
 
     def appendXrayCalibration(self, tests, test, index):
         # environment = test.environment

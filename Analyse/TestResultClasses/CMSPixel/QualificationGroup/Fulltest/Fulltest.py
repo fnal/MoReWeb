@@ -41,6 +41,49 @@ class TestResult(GeneralTestResult):
             for name, value in self.Attributes.items():
                 print "\t%25s:  %s" % (name, value)
 
+        if self.ParentObject.Attributes['QualificationType'] == 'PurdueTest':
+            #print 'Parsing PurdueTest ...'
+            self.ResultData['SubTestResultDictList'] = [
+                {  'Key': 'Chips',
+                   'DisplayOptions': {
+                       'GroupWithNext': True,
+                       'Order': 1,
+                   },
+                   'InitialAttributes': {
+                       'ModuleVersion': self.Attributes['ModuleVersion'],
+                   },
+                },
+                {
+                    'Key': 'PixelAliveMap',
+                    'DisplayOptions': {
+                        'Width': 4,
+                        'Order': 2,
+                    }
+                },
+                {
+                    'Key': 'VcalThreshold',
+                    'DisplayOptions': {
+                        'Width': 4,
+                        'Order': 3,
+                    },
+                   'InitialAttributes': {
+                       'QualificationType': 'PurdueTest',
+                   }
+                },
+                {
+                    'Key': 'BumpBondingMap',
+                    'DisplayOptions': {
+                        'Width': 4,
+                        'Order': 4,
+                    },
+                   'InitialAttributes': {
+                       'QualificationType': 'PurdueTest',
+                   }
+                },
+            ]
+            return 
+        
+
         self.ResultData['SubTestResultDictList'] = [
             {
                 'Key': 'DigitalCurrent',
@@ -367,8 +410,12 @@ class TestResult(GeneralTestResult):
             ChipTestResultObject = self.ResultData['SubTestResults']['Chips'].ResultData['SubTestResults'][i]
             ChipNo = ChipTestResultObject.Attributes['ChipNo']
             # print ChipTestResultObject.ResultData['SubTestResults'].keys()
-            PerformanceParametersTestResultObject =  ChipTestResultObject.ResultData['SubTestResults']['PerformanceParameters']
-            PerformanceParameters = PerformanceParametersTestResultObject.ResultData['KeyValueDictPairs']
+            try: 
+                PerformanceParametersTestResultObject =  ChipTestResultObject.ResultData['SubTestResults']['PerformanceParameters']
+                PerformanceParameters = PerformanceParametersTestResultObject.ResultData['KeyValueDictPairs']
+            except KeyError:
+                pass
+            
             if self.verbose:
                 for i in PerformanceParameters:
                     print '\t',ChipNo, i,PerformanceParameters[i]['Value']
@@ -523,10 +570,14 @@ class TestResult(GeneralTestResult):
         }
 
         SubtestMissing = False
-        if self.ResultData['SubTestResults']['Grading'].ResultData['HiddenData'].has_key('MissingSubtests'):
-            SubtestMissing = (int(self.ResultData['SubTestResults']['Grading'].ResultData['HiddenData']['MissingSubtests']['Value']) > 0)
         Comment = ''
+        try: 
+            if self.ResultData['SubTestResults']['Grading'].ResultData['HiddenData'].has_key('MissingSubtests'):
+                SubtestMissing = (int(self.ResultData['SubTestResults']['Grading'].ResultData['HiddenData']['MissingSubtests']['Value']) > 0)
 
+        except KeyError:
+            pass
+        
         # pixel defects and performance parameters
         try:
             Row.update({
@@ -631,8 +682,11 @@ class TestResult(GeneralTestResult):
             Comment += 'Fulltest incomplete, graded C'
            
         #adding comment (if any) from manual grading
-        if self.ResultData['SubTestResults']['Grading'].ResultData['KeyValueDictPairs'].has_key('GradeComment'):
-            Comment += self.ResultData['SubTestResults']['Grading'].ResultData['KeyValueDictPairs']['GradeComment']['Value']
+        try: 
+            if self.ResultData['SubTestResults']['Grading'].ResultData['KeyValueDictPairs'].has_key('GradeComment'):
+                Comment += self.ResultData['SubTestResults']['Grading'].ResultData['KeyValueDictPairs']['GradeComment']['Value']
+        except KeyError:
+            pass 
 
         # fill final grade and comments
         Comment = Comment.strip().strip('/')
