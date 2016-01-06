@@ -143,8 +143,9 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
         # check for test completenes
         if TestIncomplete:
-            print "\x1b[31mX-ray test incomplete/bad format => GRADE C\x1b[0m"
-            ModuleGrade = 3
+            #print "\x1b[31mX-ray test incomplete/bad format => GRADE C\x1b[0m"
+            print "X-ray test incomplete"
+            #ModuleGrade = 3
 
         #if grade was manually specified, apply it
         GradeComment = ''
