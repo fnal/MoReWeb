@@ -54,6 +54,9 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         if "Ag" in elementName:
             self.InitialEnergyGuess = 156.6
             return self.InitialEnergyGuess
+        if "In" in elementName:
+            self.InitialEnergyGuess = 175
+            return self.InitialEnergyGuess
         if "Sn" in elementName:
             self.InitialEnergyGuess = 198
             return self.InitialEnergyGuess
