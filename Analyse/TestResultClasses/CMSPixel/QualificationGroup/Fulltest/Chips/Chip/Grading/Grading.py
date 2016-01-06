@@ -97,7 +97,9 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             self.ResultData['HiddenData']['AddressProblemList'] |
             self.ResultData['HiddenData']['DeadBumpList'] |
             self.ResultData['HiddenData']['DeadPixelList'] |
-            self.ResultData['HiddenData']['MaskDefectList']
+            self.ResultData['HiddenData']['MaskDefectList']|
+            self.ResultData['HiddenData']['ThrDefectList']|
+            self.ResultData['HiddenData']['DeadTrimbitsList']
         )
 
         # total defects grading
