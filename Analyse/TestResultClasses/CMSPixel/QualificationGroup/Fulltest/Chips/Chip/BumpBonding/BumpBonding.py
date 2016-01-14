@@ -17,7 +17,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         if self.Attributes['isDigitalROC']:
             self.ResultData['KeyValueDictPairs']['nSigma'] = {'Value': -1, 'Label': 'σ'}
             self.ResultData['KeyValueDictPairs']['nBumpBondingProblems'] = {'Value': round(-1, 0),
-                                                                            'Label': 'N BumpProblems'}
+                                                                            'Label': 'N Bumps with ΔThr > σ'}
 
     def PopulateResultData(self):
         ROOT.gStyle.SetOptStat(0)
@@ -54,9 +54,9 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             self.ResultData['Plot']['ROOTObject'].Draw();
             mean = self.ResultData['Plot']['ROOTObject'].GetMean()
             rms = self.ResultData['Plot']['ROOTObject'].GetRMS()
-            thr = mean + nSigma * rms
+            thr = mean + nSigma
             startbin = self.ResultData['Plot']['ROOTObject'].FindBin(thr)
-            for bin in range(startbin, self.ResultData['Plot']['ROOTObject'].GetNbinsX()):
+            for bin in range(startbin, self.ResultData['Plot']['ROOTObject'].GetXaxis().GetLast() + 1):
                 nBumpBondingProblems += self.ResultData['Plot']['ROOTObject'].GetBinContent(bin)
             self.Cut = ROOT.TCutG('bumpBondingThreshold', 2)
             self.Cut.SetPoint(0, thr, -1e9)
