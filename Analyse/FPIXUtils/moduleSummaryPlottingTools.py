@@ -2,6 +2,7 @@
 from ROOT import *
 from array import array
 import re
+import math
 
 # Taken from https://github.com/fnal/FPIXUtils.git 
 
@@ -190,7 +191,7 @@ def findZRange(plots):
         zMin=0
 
     # round to nearest integer before returning
-    return (floor(zMin), ceil(zMax))
+    return (math.floor(zMin), math.ceil(zMax))
 
 ###############################################################################
 
