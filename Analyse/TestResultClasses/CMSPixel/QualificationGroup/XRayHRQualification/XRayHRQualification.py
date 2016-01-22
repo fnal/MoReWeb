@@ -4,14 +4,13 @@ import ROOT
 import os.path
 import glob
 import copy
-import AbstractClasses
-from AbstractClasses.Helper.BetterConfigParser import BetterConfigParser
 
 from AbstractClasses.GeneralTestResult import GeneralTestResult
 import subprocess
 import warnings
 import traceback
 #import PixelDB
+
 
 class TestResult(GeneralTestResult):
     def testDBFilling2(self, HighRateDataModule , HighRateDataAggr, HighRateDataAllNoise, HighRateDataInterp
@@ -240,6 +239,7 @@ class TestResult(GeneralTestResult):
         self.Attributes['NumberOfChips'] = self.nTotalChips
         #self.MergePyxarData()
 
+        self.AddCommentsToKeyValueDictPairs = True
         if self.Attributes['ModuleVersion'] == 1:
             if self.Attributes['ModuleType'] == 'a':
                 self.Attributes['StartChip'] = 0
@@ -362,7 +362,10 @@ class TestResult(GeneralTestResult):
         HRSCurvesPaths = glob.glob(self.RawTestSessionDataPath+'/0[0-9][0-9]_HRS[Cc]urves_*')
         for Path in HRSCurvesPaths:
             FolderName = os.path.basename(Path)
-            Rate = int(FolderName.split('_')[2])
+            try:
+                Rate = int(FolderName.split('_')[2])
+            except:
+                Rate = 0
             self.Attributes['Rates']['HRSCurves'].append(Rate)
             self.Attributes['SCurvePaths']['HRSCurves_{Rate}'.format(Rate=Rate)] = Path
             ROOTFiles = glob.glob(Path+'/*.root')
@@ -799,6 +802,14 @@ class TestResult(GeneralTestResult):
                     'Width': 1,
                 },
             })
+        self.ResultData['SubTestResultDictList'].append({
+                'Key': 'Logfile',
+                'DisplayOptions': {
+                    'GroupWithNext': False,
+                    'Order': 901,
+                    'Width': 1,
+                },
+            })
 
         for Rate in self.Attributes['Rates']['RetrimHotPixels']:
             self.ResultData['SubTestResultDictList'].append({
@@ -857,7 +868,7 @@ class TestResult(GeneralTestResult):
         try:
             grade = self.ResultData['SubTestResults']['Grading'].ResultData['KeyValueDictPairs']['ModuleGrade']['Value']
         except KeyError:
-            grade = 'None'
+            raise
 
         try:
             PixelDefects = self.ResultData['SubTestResults']['Grading'].ResultData['KeyValueDictPairs']['PixelDefects']['Value']
@@ -917,7 +928,7 @@ class TestResult(GeneralTestResult):
         }
 
         #adding comment (if any) from manual grading
-        if self.ResultData['SubTestResults']['Grading'].ResultData['KeyValueDictPairs'].has_key('GradeComment'):
+        if 'Grading' in self.ResultData['SubTestResults'] and self.ResultData['SubTestResults']['Grading'].ResultData['KeyValueDictPairs'].has_key('GradeComment'):
             Comment += self.ResultData['SubTestResults']['Grading'].ResultData['KeyValueDictPairs']['GradeComment']['Value']
         
         # fill final comments
@@ -988,11 +999,16 @@ class TestResult(GeneralTestResult):
                 ChipsSubTestResult = self.ResultData['SubTestResults']['Chips']
                 for i in ChipsSubTestResult.ResultData['SubTestResultDictList']:
                     ChipNo = i['TestResultObject'].Attributes['ChipNo']
+                    try:
+                        NColNonUniformROC = int(ChipsSubTestResult.ResultData['SubTestResults']['Chip%d'%ChipNo].ResultData['SubTestResults']['Grading'].ResultData['KeyValueDictPairs']['NumberOfNonUniformColumns']['Value'])
+                    except:
+                        NColNonUniformROC = -1
+
                     ROCNumbers.append(ChipNo)
                     TotalPixelDefectsLists.append(ChipsSubTestResult.ResultData['SubTestResults']['Chip%d'%ChipNo].ResultData['SubTestResults']['Grading'].ResultData['HiddenData']['TotalPixelDefectsList']['Value'])
                     HotPixelsLists.append(ChipsSubTestResult.ResultData['SubTestResults']['Chip%d'%ChipNo].ResultData['SubTestResults']['Grading'].ResultData['HiddenData']['HotPixelDefectsList']['Value'])
                     RocGrades.append(ChipsSubTestResult.ResultData['SubTestResults']['Chip%d'%ChipNo].ResultData['SubTestResults']['Grading'].ResultData['KeyValueDictPairs']['ROCGrade']['Value'])
-                    NColNonUniform.append(ChipsSubTestResult.ResultData['SubTestResults']['Chip%d'%ChipNo].ResultData['SubTestResults']['Grading'].ResultData['KeyValueDictPairs']['NumberOfNonUniformColumns']['Value'])
+                    NColNonUniform.append(NColNonUniformROC)
           
                 # ROC rows
                 HighRateDataRoc = {}
@@ -1047,10 +1063,10 @@ class TestResult(GeneralTestResult):
                 print "GERdddddd"
 
                 # apply aggregation function
-                ModuleMeanHitrate = sum(MeasuredHitrates) / float(len(MeasuredHitrates))
+                ModuleMeanHitrate = sum(MeasuredHitrates) / float(len(MeasuredHitrates)) if len(MeasuredHitrates) > 0 else -1
                 print "GERdddddddsdsds"
-                ModuleNonUniformEventBins = sum(NonUniformEventBins)
-                ModuleBumpBondingDefects = sum(BumpBondingDefects)
+                ModuleNonUniformEventBins = sum(NonUniformEventBins) if len(NonUniformEventBins) > 0 else -1
+                ModuleBumpBondingDefects = sum(BumpBondingDefects) if len(BumpBondingDefects) > 0 else -1
                 print "GERdddddd0000000000"
                 # remove grade from individual rows
                 HighRateDataAggr[Rate] = copy.deepcopy(GlobalDBRowTemplate)
@@ -1123,9 +1139,14 @@ class TestResult(GeneralTestResult):
                 for i in ChipsSubTestResult.ResultData['SubTestResultDictList']:
                     ChipNo = i['TestResultObject'].Attributes['ChipNo']
                     ROCNumbers.append(ChipNo)
+                    try:
+                        MeasuredHitrate = float(ChipsSubTestResult.ResultData['SubTestResults']['Chip%d'%ChipNo].ResultData['SubTestResults']['SCurveWidths_{Rate}'.format(Rate=Rate)].ResultData['KeyValueDictPairs']['MeasuredHitrate']['Value'])
+                    except:
+                        MeasuredHitrate = -1
+
                     NoiseMeans.append(float(ChipsSubTestResult.ResultData['SubTestResults']['Chip%d'%ChipNo].ResultData['SubTestResults']['SCurveWidths_{Rate}'.format(Rate=Rate)].ResultData['KeyValueDictPairs']['mu']['Value']))
                     NoiseWidths.append(float(ChipsSubTestResult.ResultData['SubTestResults']['Chip%d'%ChipNo].ResultData['SubTestResults']['SCurveWidths_{Rate}'.format(Rate=Rate)].ResultData['KeyValueDictPairs']['sigma']['Value']))
-                    MeasuredHitrates.append(float(ChipsSubTestResult.ResultData['SubTestResults']['Chip%d'%ChipNo].ResultData['SubTestResults']['SCurveWidths_{Rate}'.format(Rate=Rate)].ResultData['KeyValueDictPairs']['MeasuredHitrate']['Value']))
+                    MeasuredHitrates.append(MeasuredHitrate)
                     NoisePixelsLists.append(ChipsSubTestResult.ResultData['SubTestResults']['Chip%d'%ChipNo].ResultData['SubTestResults']['SCurveWidths_{Rate}'.format(Rate=Rate)].ResultData['HiddenData']['ListOfNoisyPixels']['Value'])
 
                 # apply aggregation function

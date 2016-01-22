@@ -197,6 +197,12 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                     'DisplayOptions':{
                         
                     }
+                },
+                {'Key':'ReadbackCalVdig',
+                    'DisplayOptions':{
+                    }
+                },
+                {'Key':'ReadbackCalIana',
                 }
 
             ]

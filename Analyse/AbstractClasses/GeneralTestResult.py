@@ -57,6 +57,8 @@ class GeneralTestResult(object):
         self.version = None
         self.nRocs = 0
         self.halfModule = 0
+        self.CommentFromFile = None
+        self.AddCommentsToKeyValueDictPairs = False
 
         if Key:
             self.Key = Key
@@ -257,7 +259,7 @@ class GeneralTestResult(object):
                 f = __import__(importdir + '.TestResult', fromlist=[''])
                 print 'imported', f, 'please change name of file'
             pass
-		
+
             self.ResultData['SubTestResults'][i['Key']] = f.TestResult(
                 self.TestResultEnvironmentObject,
                 self,
@@ -318,11 +320,13 @@ class GeneralTestResult(object):
         dir_name = os.path.abspath(self.RawTestSessionDataPath)
         comment_files = glob.glob(dir_name + '/comment*')
         comment = ''
+        comment_short = ''
         for filename in comment_files:
             comment += '{filename}:\n'.format(filename=filename.split('/')[-1])
             with file(filename) as f:
                 s = f.read()
             comment += s + '\n\n'
+            comment_short += s + ' '
         # if self.ResultData:
         # if not 'KeyVaueDictPairs' in self.ResultData:
         # self.ResultData['KeyValueDictPairs'] = {}
@@ -334,10 +338,14 @@ class GeneralTestResult(object):
         if comment != '':
             if self.verbose:
                 print 'added comment', comment, 'to ', self.Name
-            self.ResultData['KeyValueDictPairs']['Comment'] = {
-                'Value': comment,
-            }
-            self.ResultData['KeyList'].append('Comment')
+
+            if self.AddCommentsToKeyValueDictPairs:
+                self.ResultData['KeyValueDictPairs']['Comment'] = {
+                    'Value': comment,
+                    'Style': 'font-weight:bold;color:red;' if '!' in comment else 'font-weight:bold;',
+                }
+                self.ResultData['KeyList'].append('Comment')
+            self.CommentFromFile = comment_short
 
     def check_for_manualGrade(self):
         self.RawTestSessionDataPath = os.path.abspath(self.RawTestSessionDataPath)
@@ -488,39 +496,40 @@ class GeneralTestResult(object):
             logfilesList = logfiles
 
         for logfile in logfilesList:
-            with open(logfile, 'r') as logfile:
-                for line in logfile:
-                    ErrorObject = {}
+            if logfile:
+                with open(logfile, 'r') as logfile:
+                    for line in logfile:
+                        ErrorObject = {}
 
-                    if 'WARNING:' in line and not 'Not unmasking DUT' in line:
-                        ErrorObject['type'] = 'warning'
-                    if 'ERROR:' in line:
-                        ErrorObject['type'] = 'error'
-                    if 'CRITICAL:' in line:
-                        ErrorObject['type'] = 'critical'
+                        if 'WARNING:' in line and not 'Not unmasking DUT' in line:
+                            ErrorObject['type'] = 'warning'
+                        if 'ERROR:' in line:
+                            ErrorObject['type'] = 'error'
+                        if 'CRITICAL:' in line:
+                            ErrorObject['type'] = 'critical'
 
-                    ErrorObject['channel'] = None
-                    lineParts = line.strip().split()
-                    if 'Channel' in lineParts:
-                        pos = lineParts.index('Channel')
-                        if pos < len(lineParts) - 1:
-                            try:
-                                ErrorObject['channel'] = int(lineParts[pos+1])
-                            except:
-                                pass
+                        ErrorObject['channel'] = None
+                        lineParts = line.strip().split()
+                        if 'Channel' in lineParts:
+                            pos = lineParts.index('Channel')
+                            if pos < len(lineParts) - 1:
+                                try:
+                                    ErrorObject['channel'] = int(lineParts[pos+1])
+                                except:
+                                    pass
 
-                    if ErrorObject.has_key('type'):
-                        Found = False
-                        for errorname, keywords in DetectMessages.iteritems():
-                            for keyword in keywords:
-                                if keyword in line:
-                                    ErrorObject['subtype'] = errorname
-                                    Found = True
-                                    break
-                        if not Found:
-                            ErrorObject['subtype'] = 'other'
+                        if ErrorObject.has_key('type'):
+                            Found = False
+                            for errorname, keywords in DetectMessages.iteritems():
+                                for keyword in keywords:
+                                    if keyword in line:
+                                        ErrorObject['subtype'] = errorname
+                                        Found = True
+                                        break
+                            if not Found:
+                                ErrorObject['subtype'] = 'other'
 
-                        ErrorObjects.append(ErrorObject)
+                            ErrorObjects.append(ErrorObject)
 
         KeyValueDictPairs['nCriticals'] = {'Label': '# Criticals', 'Value': '%d'%len([True for ErrorObject in ErrorObjects if ErrorObject['type'] == 'critical'])}
         KeyValueDictPairs['nErrors'] = {'Label': '# Errors', 'Value': '%d'%len([True for ErrorObject in ErrorObjects if ErrorObject['type'] == 'error'])}
@@ -1054,6 +1063,10 @@ class GeneralTestResult(object):
             if not SubTestResultListItems:
                 SubTestResultListHTML = ''
 
+
+        if 'HTMLContent' in TestResultObject.ResultData:
+            ResultDataHTML = ResultDataHTML + TestResultObject.ResultData['HTMLContent']
+
         ResultDataHTML = HtmlParser.substituteSubpartArray(
             ResultDataHTML,
             {
@@ -1118,9 +1131,11 @@ class GeneralTestResult(object):
         ID = 0
         ID = self.CustomWriteToDatabase(ParentID)
 
+        WriteToDBSuccess = True
         for i in self.ResultData['SubTestResults']:
             try:
-                self.ResultData['SubTestResults'][i].WriteToDatabase(ID)
+                SubtestWriteToDBSuccess = self.ResultData['SubTestResults'][i].WriteToDatabase(ID)
+                WriteToDBSuccess = WriteToDBSuccess and SubtestWriteToDBSuccess
             except Exception as inst:
                 # Start red color
                 sys.stdout.write("\x1b[31m")
@@ -1137,8 +1152,10 @@ class GeneralTestResult(object):
                 # Reset color
                 sys.stdout.write("\x1b[0m")
                 sys.stdout.flush()
+                WriteToDBSuccess = False
 
         self.PostWriteToDatabase()
+        return WriteToDBSuccess
 
     def CustomWriteToDatabase(self, ParentID):
         pass

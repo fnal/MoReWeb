@@ -1,5 +1,12 @@
 import ROOT
 import AbstractClasses
+import os, json
+
+class SetEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, set):
+            return list(obj)
+        return json.JSONEncoder.default(self, obj)
 
 class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProductionOverview):
 
@@ -14,11 +21,63 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
 
         self.SaveHTML = True
 
+        Rows = self.FetchData()
+        ModuleIDsList = self.GetModuleIDsList(Rows)
+        NumModules = len(ModuleIDsList)
+        NumModulesMaxPerList = 50
+
         TestsList = ['m20_1', 'm20_2', 'p17_1']
+        ReadbackParameters = [
+            {
+                'Parameter': 'par0vd',
+                'Xmin': -30,
+                'Xmax': 30
+            },
+            {
+                'Parameter': 'par1vd',
+                'Xmin': 30,
+                'Xmax': 100
+            },
+            {
+                'Parameter': 'par0va',
+                'Xmin': -30,
+                'Xmax': 30
+            },
+            {
+                'Parameter': 'par1va',
+                'Xmin': 0,
+                'Xmax': 100
+            },
+            {
+                'Parameter': 'par0rbia',
+                'Xmin': -20,
+                'Xmax': 50
+            },
+            {
+                'Parameter': 'par1rbia',
+                'Xmin': -1,
+                'Xmax': 3,
+            },
+            {
+                'Parameter': 'par0tbia',
+                'Xmin': 0,
+                'Xmax': 10
+            },
+            {
+                'Parameter': 'par1tbia',
+                'Xmin': 0,
+                'Xmax': 1
+            },
+            {
+                'Parameter': 'par2tbia',
+                'Xmin': -0.001,
+                'Xmax': 0.001
+            },
+        ]
 
         self.SubPages.append({
             "InitialAttributes" : {
-                "Sections": ["BumpBonding", "DeadPixel", "PerformanceParameters", "DACs", "IVCurves", "HighRate", "VcalCalibration"],
+                "Sections": ["BumpBonding", "DeadPixel", "PerformanceParameters", "DACs", "IVCurves", "Readback", "HighRate", "VcalCalibration"],
                 "DateBegin": self.Attributes['DateBegin'],
                 "DateEnd": self.Attributes['DateEnd'],
             }, 
@@ -74,17 +133,25 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
                 }
             )
 
-            self.SubPages.append(
-                {
-                    "Key": "ModuleFailuresOverview",
-                    "Module": "ModuleFailuresOverview",
-                    "InitialAttributes" : {
-                        "StorageKey" : "ModuleFailuresOverview",
-                        "DateBegin": self.Attributes['DateBegin'],
-                        "DateEnd": self.Attributes['DateEnd'],
-                    },
-                }
-            )
+            Offset = 0
+            NumModulesToShow = NumModules
+
+            while (NumModulesToShow > 0):
+                self.SubPages.append(
+                    {
+                        "Key": "ModuleFailuresOverview",
+                        "Module": "ModuleFailuresOverview",
+                        "InitialAttributes" : {
+                            "StorageKey" : "ModuleFailuresOverview_%d"%Offset,
+                            "DateBegin": self.Attributes['DateBegin'],
+                            "DateEnd": self.Attributes['DateEnd'],
+                            "NumModules": NumModulesMaxPerList,
+                            "Offset": Offset,
+                        },
+                    }
+                )
+                NumModulesToShow -= NumModulesMaxPerList
+                Offset += NumModulesMaxPerList
         else:     
             self.SubPages.append(
                 {
@@ -138,19 +205,34 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
                 }
             }
         )
-
         ### dead pixels ###
         self.SubPages.append({"InitialAttributes" : {"Anchor": "DeadPixel", "Title": "Dead Pixels"}, "Key": "Section","Module": "Section"})
-
-        for Test in TestsList:
+        for Grade in ['All','A', 'B', 'C']:
             self.SubPages.append(
                 {
-                    "Key": "DeadPixelOverlay_{Test}".format(Test = Test),
+                    "Key": "DeadPixelOverlay_{Grade}".format(Grade = Grade),
                     "Module": "DeadPixelOverlay",
                     "InitialAttributes" : {
-                        "Test": "{Test}".format(Test = Test),
-                        "Grade": "All",
-                        "StorageKey" : "DeadPixelOverlay_{Test}".format(Test = Test),
+                        "Test": "m20_2",
+                        "Grade": "{Grade}".format(Grade = Grade),
+                        "StorageKey" : "DeadPixelOverlay_{Grade}".format(Grade = Grade),
+                        "DateBegin": self.Attributes['DateBegin'],
+                        "DateEnd": self.Attributes['DateEnd'],
+                    }
+                }
+            )
+
+        ### pixels with too high or low gain ###
+        self.SubPages.append({"InitialAttributes" : {"Anchor": "BadGain", "Title": "Pixels with bad gain"}, "Key": "Section","Module": "Section"})
+        for Grade in ['All','A', 'B', 'C']:
+            self.SubPages.append(
+                {
+                    "Key": "GainOverlay_{Grade}".format(Grade = Grade),
+                    "Module": "GainOverlay",
+                    "InitialAttributes" : {
+                        "Test": "m20_2",
+                        "Grade": "{Grade}".format(Grade = Grade),
+                        "StorageKey" : "GainOverlay_{Grade}".format(Grade = Grade),
                         "DateBegin": self.Attributes['DateBegin'],
                         "DateEnd": self.Attributes['DateEnd'],
                     }
@@ -393,6 +475,25 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
                 }
             )
 
+        ### Readback ###
+        self.SubPages.append({"InitialAttributes" : {"Anchor": "Readback", "Title": "Readback"}, "Key": "Section","Module": "Section"})
+        for Test in TestsList:
+            for Parameter in ReadbackParameters:
+                self.SubPages.append(
+                    {
+                        "Key": "ReadbackParameter_{Test}_{Parameter}".format(Test = Test, Parameter = Parameter['Parameter']),
+                        "Module": "ReadbackParameter",
+                        "InitialAttributes" : {
+                            "Test": Test,
+                            "Parameter": Parameter['Parameter'],
+                            "Xmin": Parameter['Xmin'],
+                            "Xmax": Parameter['Xmax'],
+                            "StorageKey" : "ReadbackParameter_{Test}_{Parameter}".format(Test = Test, Parameter = Parameter['Parameter']),
+                            "DateBegin": self.Attributes['DateBegin'],
+                            "DateEnd": self.Attributes['DateEnd'],
+                        }
+                    }
+                )
 
         ### HR ###
         self.SubPages.append({"InitialAttributes" : {"Anchor": "HighRate", "Title": "HighRateTests"}, "Key": "Section","Module": "Section"})
@@ -409,6 +510,17 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
                     }
                 }
             )
+        self.SubPages.append(
+            {
+                "Key": "XrayNoisePerPixel",
+                "Module": "XrayNoisePerPixel",
+                "InitialAttributes" : {
+                    "StorageKey" : "XrayNoisePerPixel",
+                    "DateBegin": self.Attributes['DateBegin'],
+                    "DateEnd": self.Attributes['DateEnd'],
+                }
+            }
+        )
 
         ### Vcal Calibration ###
         self.SubPages.append({"InitialAttributes" : {"Anchor": "VcalCalibration", "Title": "Vcal Calibration"}, "Key": "Section","Module": "Section"})
@@ -437,6 +549,39 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
 
     def GenerateOverview(self):
         AbstractClasses.GeneralProductionOverview.GeneralProductionOverview.GenerateOverview(self)
+
+        # for all plots that have been split into several boxes
+        # merge the JSON files to simplify further processing of the data
+        SumJSONFilesModules = ['ModuleFailuresOverview']
+        for SumJSONFilesModule in SumJSONFilesModules:
+            print("merge JSON files for '%s'..."%SumJSONFilesModule)
+            TotalJSONDict = {}
+            for Page in [x for x in self.SubPages if x['Key'] == SumJSONFilesModule]:
+                Path = self.GlobalOverviewPath + '/' + self.Attributes['BasePath'] + '/' + Page['InitialAttributes']['StorageKey'] + "/KeyValueDictPairs.json"
+                with open(Path) as data_file:
+                    JSONData = json.load(data_file)
+                    TotalJSONDict.update(JSONData)
+                    print("add file: %s"%Path)
+
+            # create directory
+            JsonFileDir = self.GlobalOverviewPath + '/' + self.Attributes['BasePath'] + '/' + SumJSONFilesModule
+            JsonFileName = JsonFileDir + '/KeyValueDictPairs.json'
+            try:
+                os.mkdir(JsonFileDir)
+            except:
+                pass
+
+            # save file
+            try:
+                f = open(JsonFileName, 'w')
+                f.write(json.dumps(TotalJSONDict, sort_keys=True, indent=4, separators=(',', ': '), cls=SetEncoder))
+                f.close()
+                print("-"*100)
+                print("-> written to %s"%JsonFileName)
+            except:
+                print("could not write json file: '%s'!"%JsonFileName)
+
+
 
         HTML = "<a href='%s'>%s</a><br />"%(self.GetStorageKey()+'/'+self.HTMLFileName, self.Attributes['Title'])
         return HTML

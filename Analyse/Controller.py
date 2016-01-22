@@ -1,6 +1,6 @@
 #!/usr/bin/env python
  # -*- coding: utf-8 -*-
-from AbstractClasses import PresentationMaker, GeneralTestResult, TestResultEnvironment, ModuleResultOverview, GeneralProductionOverview, GetValuesForSummaryPresentation
+from AbstractClasses import PresentationMaker, GeneralTestResult, TestResultEnvironment, ModuleResultOverview, GeneralProductionOverview, GetValuesForPresentation
 import AbstractClasses.Helper.hasher as hasher
 import argparse
 # from AbstractClasses import Helper
@@ -52,10 +52,31 @@ parser.add_argument('-new', '--new-folders-only', dest = 'no_re_analysis', actio
                     help = 'Do not analyze folder if it already exists in DB, even if MoReWeb version has changed')
 parser.add_argument('-pres', '--make-presentation', dest = 'make_presentation', action = 'store_true', default = False,
                     help = 'Creates tex file for presentation in the end')
+parser.add_argument('-tc', '--show-test-center', dest = 'show_test_center', action = 'store_true', default = False,
+                    help = 'Show test-center in qualification list')
+parser.add_argument('-i', '--include-path', dest = 'additional_include_path', metavar='PATH', default = '',
+                    help = argparse.SUPPRESS)
+parser.add_argument('-g', '--use-global-db', dest = 'use_global_db', action = 'store_true', default = False,
+                    help = argparse.SUPPRESS)
 
 parser.set_defaults(DBUpload=True)
 args = parser.parse_args()
 verbose = args.verbose
+
+# allows to import PixelDB module from a different location
+if args.additional_include_path and len(args.additional_include_path) > 0:
+    AdditionalIncludePaths = args.additional_include_path.split(';')
+    for AdditionalIncludePath in AdditionalIncludePaths:
+        if verbose:
+            print "try adding additional python module include path: '%s'"%AdditionalIncludePath
+        try:
+            sys.path.append(AdditionalIncludePath)
+            if verbose:
+                print "ok."
+        except:
+            if verbose:
+                print "failed."
+
 
 import AbstractClasses.Helper.ROOTConfiguration as ROOTConfiguration
 
@@ -84,6 +105,9 @@ Configuration.read([
     'Configuration/ModuleInformation.cfg',
     'Configuration/ProductionOverview.cfg'
     ])
+
+if args.use_global_db:
+    Configuration.set('SystemConfiguration', 'UseGlobalDatabase', '1')
 
 if args.revision != -1:
     revisionNumber = int(args.revision)
@@ -165,6 +189,15 @@ if MoReWebBranch:
 if args.refit:
     TestResultEnvironmentInstance.Configuration['Fitting']['refit'] = True
 
+if 'SystemConfiguration' not in TestResultEnvironmentInstance.Configuration:
+    TestResultEnvironmentInstance.Configuration['SystemConfiguration'] = {}
+
+if args.show_test_center:
+    TestResultEnvironmentInstance.Configuration['SystemConfiguration']['show_test_center'] = True
+else:
+    TestResultEnvironmentInstance.Configuration['SystemConfiguration']['show_test_center'] = False
+
+
 if Configuration.has_option('Paths','AbsoluteOverviewPage'):
     TestResultEnvironmentInstance.Configuration['OverviewHTMLLink'] = Configuration.get('Paths','AbsoluteOverviewPage')
     if verbose:
@@ -214,7 +247,11 @@ def NeedsToBeAnalyzed(FinalModuleResultsPath,ModuleInformation):
         if verbose: print 'md5 sum exists %s'%md5FileName
         bSameFiles = hasher.compare_two_files('checksum.md5',md5FileName)
         if not Configuration.getboolean('SystemConfiguration','UseGlobalDatabase'):
-            bExistInDB = TestResultEnvironmentInstance.existInDB(ModuleInformation['ModuleID'],ModuleInformation['QualificationType'])
+            if args.no_re_analysis:
+                # if -new parameter is specified, check if there if a file with same date or even a newer file in db
+                bExistInDB = TestResultEnvironmentInstance.existInDB(ModuleInformation['ModuleID'],ModuleInformation['QualificationType'],ModuleInformation['TestDate'])
+            else:
+                bExistInDB = TestResultEnvironmentInstance.existInDB(ModuleInformation['ModuleID'],ModuleInformation['QualificationType'])
             if verbose: print 'check if Module exists: %s'%bExistInDB
         else:
             if verbose: print 'use Global DataBase: ',Configuration.get('SystemConfiguration','UseGlobalDatabase')
@@ -286,12 +323,17 @@ def AnalyseTestData(ModuleInformationRaw,ModuleFolder):
 
     CreateApacheWebserverConfiguration(FinalModuleResultsPath)
 
+    ModuleIdentifier = ModuleInformation['ModuleID'] + '-' + ModuleInformation['QualificationType'] + '-' + ModuleInformation['TestDate']
+    TestResultEnvironmentInstance.ModulesAnalyzed.append(ModuleIdentifier)
     print 'Working on: ',ModuleInformation
     print ' -- '
 
     print '    Populating Data'
     ModuleTestResult.PopulateAllData()
-    ModuleTestResult.WriteToDatabase() # needed before final output
+    WriteToDBSuccess = ModuleTestResult.WriteToDatabase() # needed before final output
+
+    if WriteToDBSuccess:
+        TestResultEnvironmentInstance.ModulesInsertedIntoDB.append(ModuleIdentifier)
 
     print '    Generating Final Output'
     ModuleTestResult.GenerateFinalOutput()
@@ -573,11 +615,11 @@ if args.production_overview:
     if args.make_presentation:
         print "presentation maker: collecting data..."
         Summary = PresentationMaker.MakeProductionSummary()
-        GetInfo = GetValuesForSummaryPresentation.ModuleSummaryValues(TestResultEnvironmentInstance)
-        values = GetInfo.MakeArray()
+        GetInfo = GetValuesForPresentation.ModuleSummaryValues(TestResultEnvironmentInstance)
+        grades = GetInfo.MakeArray(GlobalOverviewPath)
         print "presentation maker: write tex file..."
         try:
-            Summary.MakeTexFile(values)
+            Summary.MakeTexFile(grades)
             print "done."
         except:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -600,4 +642,34 @@ print '\nErrorList:'
 for i in TestResultEnvironmentInstance.ErrorList:
     print i
     print '\t - %s: %s'%(i['ModulePath'],i['ErrorCode'])
-sys.exit(len(TestResultEnvironmentInstance.ErrorList))
+
+
+ExitCode = -2
+
+try:
+    ModulesNotInsertedIntoDB = list(set(TestResultEnvironmentInstance.ModulesAnalyzed) - set(TestResultEnvironmentInstance.ModulesInsertedIntoDB))
+except:
+    ModulesNotInsertedIntoDB = []
+
+if TestResultEnvironmentInstance.Configuration['Database']['UseGlobal']:
+
+    if len(ModulesNotInsertedIntoDB) == 0 and len(TestResultEnvironmentInstance.ModulesInsertedIntoDB) > 0:
+        ExitCode = 0
+    else:
+        ExitCode = len(TestResultEnvironmentInstance.ErrorList)
+
+else:
+    ExitCode = len(TestResultEnvironmentInstance.ErrorList)
+
+try:
+    if len(ModulesNotInsertedIntoDB) > 0:
+        print 'Modules not inserted into DB: %s'%','.join(ModulesNotInsertedIntoDB)
+except:
+    pass
+
+print 'inserted: ', TestResultEnvironmentInstance.ModulesInsertedIntoDB
+print 'failed: ', ModulesNotInsertedIntoDB
+print 'Exit code: %d'%ExitCode
+
+sys.exit(ExitCode)
+

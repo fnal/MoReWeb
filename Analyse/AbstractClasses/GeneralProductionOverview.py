@@ -6,6 +6,7 @@ import os
 import ROOT
 import glob
 import json
+import copy
 
 class GeneralProductionOverview:
     LastUniqueIDCounter = 1
@@ -16,6 +17,7 @@ class GeneralProductionOverview:
             self.GlobalOverviewPath = self.TestResultEnvironmentObject.GlobalOverviewPath
 
         self.Debug = False
+        self.Verbose = False
         self.Name = 'AbstractClasses_GeneralProductionOverview'
         self.NameSingle = 'GeneralProductionOverview'
         self.SubPages = []
@@ -53,12 +55,20 @@ class GeneralProductionOverview:
         self.Canvas.Clear()
         self.Canvas.cd()
         self.ParentObject = ParentObject
-
+        self.ProblematicModulesList = []
+        self.FullQualificationFullTests = ['m20_1', 'm20_2', 'p17_1']
         ### custom init
         self.CustomInit()
 
         try:
-            print " ", self.NameSingle
+            TestName = self.NameSingle
+            if 'Test' in self.Attributes:
+                TestName += " %s"%self.Attributes['Test']
+            if 'DAC' in self.Attributes:
+                TestName += " %s"%self.Attributes['DAC']
+            if 'Trim' in self.Attributes:
+                TestName += " -T %s"%self.Attributes['Trim']
+            print " ", TestName
         except:
             pass
 
@@ -158,11 +168,19 @@ class GeneralProductionOverview:
 
         return Rows
 
-    def GetModuleIDsList(self, Rows):
+    def GetModuleIDsList(self, Rows, NumModules = 9999, Offset = 0):
         ModuleIDsList = []
         for RowTuple in Rows:
             if not RowTuple['ModuleID'] in ModuleIDsList:
                 ModuleIDsList.append(RowTuple['ModuleID'])
+        ModuleIDsList.sort()
+
+        if Offset < len(ModuleIDsList):
+            ModuleIDsList = ModuleIDsList[Offset::]
+
+        if len(ModuleIDsList) > NumModules:
+            ModuleIDsList = ModuleIDsList[0:NumModules]
+
         return ModuleIDsList
 
     def GetModuleQualificationRows(self, ModuleID):
@@ -474,10 +492,12 @@ class GeneralProductionOverview:
 
         MultipleFilesWarning = False
         if len(RootFileNames) > 1:
-            print "    More than 1 root file found! Using the first one which contains the histogram."
+            if self.Verbose:
+                print "    More than 1 root file found! Using the first one which contains the histogram."
             MultipleFilesWarning = True
         elif len(RootFileNames) < 1:
-            print "    .root file for histogram %s not found!"%HistName
+            if self.Verbose:
+                print "    .root file for histogram %s not found!"%HistName
             return None
 
         HistogramFound = False
@@ -530,12 +550,14 @@ class GeneralProductionOverview:
         except:
             JSONFiles = glob.glob(Path)
             if len(JSONFiles) > 1:
-                print "WARNING: %s more than 1 file found '%s"%(self.Name, Path)
+                if self.Verbose:
+                    print "WARNING: %s more than 1 file found '%s"%(self.Name, Path)
                 return None
             elif len(JSONFiles) < 1:
                 # first Fulltest at -20 is allowed to not have IV curve, don't show warning in this case
                 if not 'ModuleFulltestPxar_m20_1/IVCurve' in Path:
-                    print "WARNING: %s json file not found: '%s"%(self.Name, Path)
+                    if self.Verbose:
+                        print "WARNING: %s json file not found: '%s"%(self.Name, Path)
                 return None
             else:
                 try:
@@ -577,5 +599,120 @@ class GeneralProductionOverview:
             THCumulative.SetBinContent(binx, Sum)
         return THCumulative
 
+    def DisplayErrorsList(self):
+        UniqueList = list(set(self.ProblematicModulesList))
+        if len(UniqueList)>0:
+            print("    \x1b[31m==> Problems with modules: %s\x1b[0m"%(', '.join(UniqueList)))
 
 
+    def DrawPixelHistogram(self, Rows, ModuleIDsList, HistogramDict, HistogramOptions):
+        ROOT.gPad.SetLogy(1)
+        ROOT.gStyle.SetOptStat("")
+
+        GradeDict = {
+            'A':1,
+            'B':2,
+            'C':3,
+        }
+
+        NROCs = 0
+        for RowTuple in Rows:
+            ModuleID = RowTuple['ModuleID']
+            if ModuleID in ModuleIDsList:
+                if ('TestType' in HistogramOptions and HistogramOptions['TestType'] == RowTuple['TestType']) or ('Test' in self.Attributes and RowTuple['TestType'] == self.Attributes['Test']):
+                    for Chip in range(0, 16):
+                        GradeJsonPath = [x.format(Chip=Chip) if '{Chip}' in x else x for x in HistogramOptions['GradeJsonPath']]
+                        RootFilePath = [x.format(Chip=Chip) if '{Chip}' in x else x for x in HistogramOptions['RootFilePath']]
+                        GradeJsonPath[:0] = [RowTuple['RelativeModuleFinalResultsPath'], RowTuple['FulltestSubfolder']]
+                        RootFilePath[:0] = [self.GlobalOverviewPath, RowTuple['RelativeModuleFinalResultsPath'], RowTuple['FulltestSubfolder']]
+
+                        Grade = self.GetJSONValue(GradeJsonPath)
+                        try:
+                            if Grade and Grade in GradeDict:
+                                Grade = GradeDict[Grade]
+
+                            if Grade and '\n' in Grade:
+                                Grade = Grade.split('\n')[0]
+                        except:
+                            pass
+
+                        Path = '/'.join(RootFilePath)
+                        RootFiles = glob.glob(Path)
+                        ROOTObject = copy.copy(self.GetHistFromROOTFile(RootFiles, HistogramOptions['RootFileHistogramName'])) # (called PHCalibrationGain) todo: name consistently in creation of .root file
+
+                        if ROOTObject:
+                            NROCs += 1
+                            for HistogramName, HistogramData in HistogramDict.items():
+                                if 'Grades' not in HistogramData or (Grade and int(Grade) in HistogramData['Grades']):
+                                    if HistogramData['Histogram']:
+                                        try:
+                                            HistogramDict[HistogramName]['Histogram'].Add(ROOTObject)
+                                        except:
+                                            print "histogram could not be added, (did you try to use results of different MoReWeb versions?)"
+                                    else:
+                                        HistogramDict[HistogramName]['Histogram'] = copy.copy(ROOTObject)
+                            self.CloseFileHandles()
+                        else:
+                            self.ProblematicModulesList.append(ModuleID)
+
+
+        if HistogramDict:
+            stats = ROOT.TLatex()
+            stats.SetNDC()
+            stats.SetTextSize(0.025)
+            stats.SetTextAlign(10)
+            stats.SetTextFont(62)
+            statsText = []
+
+            First = True
+            Counter = 0
+            StatsTextCounter = 0
+            for HistogramName, HistogramData in sorted(HistogramDict.items()):
+                if HistogramData['Histogram'] and ('Show' not in HistogramData or HistogramData['Show']):
+
+                    # draw histogram
+                    HistogramData['Histogram'].SetLineColor(HistogramData['Color'] if 'Color' in HistogramData else ROOT.kBlack)
+                    if First:
+                        HistogramData['Histogram'].GetXaxis().SetRangeUser(HistogramOptions['Range'][0], HistogramOptions['Range'][1])
+                        HistogramData['Histogram'].GetXaxis().CenterTitle()
+                        HistogramData['Histogram'].GetXaxis().SetTitle(HistogramOptions['XTitle'])
+                        HistogramData['Histogram'].GetYaxis().SetTitle(HistogramOptions['YTitle'])
+                        HistogramData['Histogram'].GetYaxis().CenterTitle()
+                        HistogramData['Histogram'].GetYaxis().SetTitleOffset(1.2)
+                        HistogramData['Histogram'].Draw("hist")
+
+                        First = False
+                    else:
+                        HistogramData['Histogram'].Draw("same;hist")
+
+
+                    # add stats entry
+                    mean = round(HistogramData['Histogram'].GetMean(), 2)
+                    rms = round(HistogramData['Histogram'].GetRMS(), 2)
+                    underflowCount = HistogramData['Histogram'].GetBinContent(0)
+                    overflowCount = HistogramData['Histogram'].GetBinContent(HistogramData['Histogram'].GetSize())
+                    
+                    stats.SetTextColor(HistogramData['Color'] if 'Color' in HistogramData else ROOT.kBlack)
+                    statsText = "{Name}: #mu={mu}, #sigma={sigma}".format(Name=HistogramData['Title'] if 'Title' in HistogramData else HistogramName, mu=mean, sigma=rms)
+                    stats.DrawLatex(HistogramOptions['StatsPosition'][0], HistogramOptions['StatsPosition'][1] - StatsTextCounter*0.02, statsText)
+                    StatsTextCounter += 1
+
+                    statsText = "N={N} UF={uf:1.0f}, OF={of:1.0f}".format(N=HistogramData['Histogram'].GetEntries(), uf=underflowCount, of=overflowCount)
+                    stats.DrawLatex(HistogramOptions['StatsPosition'][0], HistogramOptions['StatsPosition'][1] - StatsTextCounter*0.02, statsText)
+                    StatsTextCounter += 1
+
+                    Counter += 1
+
+            ROOT.gPad.Update()
+
+            # draw caption
+            try:
+                NPix = HistogramDict['0-All']['Histogram'].GetEntries()
+            except:
+                NPix = 0
+
+            title = ROOT.TText()
+            title.SetNDC()
+            title.SetTextAlign(12)
+            title.SetTextSize(0.03)
+            title.DrawText(0.15, 0.96, "#roc: %d,  #pix: %d"%(NROCs, NPix))

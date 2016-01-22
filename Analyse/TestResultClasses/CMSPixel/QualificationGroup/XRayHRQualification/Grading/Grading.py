@@ -105,7 +105,9 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
                 # column uniformity
                 NonUniformColumnsROC = int(i['TestResultObject'].ResultData['SubTestResults']['Grading'].ResultData['KeyValueDictPairs']['NumberOfNonUniformColumns']['Value'])
-                if NonUniformColumnsROC > 0:
+                NonUniformColumnEventsROCList = i['TestResultObject'].ResultData['SubTestResults']['Grading'].ResultData['KeyValueDictPairs']['NumberOfNonUniformColumnEvents']['Value']
+                NonUniformColumnEventsROC = sum([int(x) for x in NonUniformColumnEventsROCList.split('/')])
+                if NonUniformColumnsROC > 0 or NonUniformColumnEventsROC > 0:
                     ROCsWithUniformityProblems += 1
 
                 # readout uniformity
@@ -151,10 +153,29 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         GradeComment = ''
         ManualGrade = self.check_for_manualGrade()
         if ManualGrade != '':
-            GradeComment = "Grade manually changed from "+str(GradeMapping[ModuleGrade])+" to "+str(GradeMapping[int(ManualGrade)])
+            OldGrade = str(GradeMapping[ModuleGrade])
+            NewGrade = str(GradeMapping[int(ManualGrade)])
+
+            print '*'*80
+            if NewGrade != OldGrade:
+                GradeComment = "Grade manually changed from "+OldGrade+" to "+NewGrade
+            else:
+                GradeComment = "Manually graded " + NewGrade + " (already " + OldGrade + " before)"
             print GradeComment
-            ModuleGrade =int(ManualGrade)
-                    
+
+            ModuleGrade = int(ManualGrade)
+            print '*'*80
+
+        try:
+            MeanEfficiency50 = '{0:1.2f}'.format(sum(MeanEfficiency50List)/float(len(MeanEfficiency50List)))
+        except:
+            MeanEfficiency50 = '-1'
+
+        try:
+            MeanEfficiency120 = '{0:1.2f}'.format(sum(MeanEfficiency120List)/float(len(MeanEfficiency120List)))
+        except:
+            MeanEfficiency120 = '-1'
+            
         SubGradings['PixelDefects'] = SubGrading
         self.ResultData['KeyValueDictPairs'] = {
             'Module': {
@@ -182,11 +203,11 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                 'Label': 'Total Pixel Defects'
             },
             'Efficiency_50': {
-                'Value': '{0:1.2f}'.format(sum(MeanEfficiency50List)/float(len(MeanEfficiency50List))),
+                'Value': MeanEfficiency50,
                 'Label': 'Mean efficiency at 50 MHz/cm2'
             },
             'Efficiency_120': {
-                'Value': '{0:1.2f}'.format(sum(MeanEfficiency120List)/float(len(MeanEfficiency120List))),
+                'Value': MeanEfficiency120,
                 'Label': 'Mean efficiency at 120 MHz/cm2'
             },
             'ROCGrades': {

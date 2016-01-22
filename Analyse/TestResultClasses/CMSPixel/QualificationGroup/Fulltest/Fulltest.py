@@ -1,7 +1,7 @@
 import os
 import sys
 import ROOT
-import warnings
+import traceback
 
 import AbstractClasses
 from AbstractClasses.Helper.BetterConfigParser import BetterConfigParser
@@ -16,6 +16,7 @@ class TestResult(GeneralTestResult):
         self.Title = str(self.Attributes['ModuleID']) + ' ' + self.Attributes['StorageKey']
         self.Attributes['TestedObjectType'] = 'CMSPixel_Module'
         self.Attributes['NumberOfChips'] = self.nTotalChips
+        self.AddCommentsToKeyValueDictPairs = True
         self.MergePyxarData()
 
         if self.Attributes['ModuleVersion'] == 1:
@@ -86,6 +87,12 @@ class TestResult(GeneralTestResult):
 
         self.ResultData['SubTestResultDictList'] = [
             {
+                'Key': 'ConfigFiles',
+                'DisplayOptions': {
+                    'Show': False,
+                }
+            },  
+            {
                 'Key': 'DigitalCurrent',
                 'DisplayOptions': {
                     'Order': 20,
@@ -118,6 +125,7 @@ class TestResult(GeneralTestResult):
                 'DisplayOptions': {
                     'GroupWithNext': False,
                     'Order': 99,
+                    'Show': False,
                 },
                 'InitialAttributes': {
                     'ModuleVersion': self.Attributes['ModuleVersion'],
@@ -256,7 +264,29 @@ class TestResult(GeneralTestResult):
                     'Width': 5,
                 }
             },
+            {
+                'Key': 'Logfile',
+                'DisplayOptions': {
+                    'Width': 1,
+                    'Order': 120,
+                    'Show': True,
+                }
+            },
         ]
+
+        for ReadbackParameter in ['par0vd', 'par1vd','par0va','par1va','par0rbia','par1rbia','par0tbia','par1tbia','par2tbia']:
+            self.ResultData['SubTestResultDictList'].append({
+                'Key': 'ReadbackParameter_%s'%ReadbackParameter,
+                'Module': 'ReadbackParameter',
+                'InitialAttributes': {
+                    'Parameter': ReadbackParameter,
+                    'StorageKey': 'ReadbackParameter_%s'%ReadbackParameter,
+                },
+                'DisplayOptions': {
+                    'Order': 90,
+                    'Width': 1,
+                }
+            })
 
     def MergePyxarData(self):
         self.check_Test_Software()
@@ -378,29 +408,6 @@ class TestResult(GeneralTestResult):
         if self.FileHandle:
             self.FileHandle.Close()
 
-    def GradeIV(self, i1,i2, slope, temp):
-        grade = ''
-
-        print "GRADING FUNCTION: input is ", i1,i2, slope, temp
-        
-        #
-        # note I2 = 150V!
-        #
-        # criteria from https://twiki.cern.ch/twiki/pub/CMS/BPixDB/BPIX_IV_Upload_Specification_1.2.pdf pag 9
-
-        if i2<2e-6:
-            grade='A'
-        elif i2<10e-6:
-            grade='B'
-        else:
-            grade='C'
-            
-        if (slope>2):
-            grade='C'
-            
-        print ' GRADE FUNCTION REURNING ',grade
-        return grade
-
     def CustomWriteToDatabase(self, ParentID):
         if self.verbose:
             print 'Write to DB: ',ParentID
@@ -421,18 +428,18 @@ class TestResult(GeneralTestResult):
                     print '\t',ChipNo, i,PerformanceParameters[i]['Value']
         ####
         IVCurveData = {
-        	'CurrentAtVoltage150V':-1,
-        	'CurrentAtVoltage100V':-1,
-        	'RecalculatedCurrentAtVoltage150V':-1,
+            'CurrentAtVoltage150V':-1,
+            'CurrentAtVoltage100V':-1,
+            'RecalculatedCurrentAtVoltage150V':-1,
                 'RecalculatedCurrentAtVoltage100V':-1,
                 'RecalculatedToTemperature':17,
-        	'IVSlope':0,
-        	'IVCurveFilePath':'',
-        	'TestTemperature':'',
-        	'IVCurveData':{
-        		'VoltageList':[],
-        		'CurrentList':[]
-        	}
+            'IVSlope':0,
+            'IVCurveFilePath':'',
+            'TestTemperature':'',
+            'IVCurveData':{
+                'VoltageList':[],
+                'CurrentList':[]
+            }
         }
         
         if self.ResultData['SubTestResults'].has_key('IVCurve'):
@@ -488,18 +495,20 @@ class TestResult(GeneralTestResult):
         except KeyError:
             grade = 'None'
         print 'fill row'
+
+        # fill meta data and default values
         Row = {
             'ModuleID': self.Attributes['ModuleID'],
             'TestDate': self.Attributes['TestDate'],
             'TestType': self.Attributes['TestType'],
             'QualificationType': self.ParentObject.Attributes['QualificationType'],
-            'PixelDefects': None,
-            'ROCsLessThanOnePercent': None,
-            'ROCsMoreThanOnePercent': None,
-            'ROCsMoreThanFourPercent': None,
-            'Noise': None,
-            'Trimming': None,
-            'PHCalibration': None,
+            'PixelDefects': -1,
+            'ROCsLessThanOnePercent': -1,
+            'ROCsMoreThanOnePercent': -1,
+            'ROCsMoreThanFourPercent': -1,
+            'Noise': -1,
+            'Trimming': -1,
+            'PHCalibration': -1,
             'CurrentAtVoltage150V': IVCurveData['CurrentAtVoltage150V'],
             'CurrentAtVoltage100V':IVCurveData['CurrentAtVoltage100V'],
             'RecalculatedCurrentAtVoltage150V': IVCurveData['RecalculatedCurrentAtVoltage150V'],
@@ -508,7 +517,7 @@ class TestResult(GeneralTestResult):
             'IVSlope': IVCurveData['IVSlope'],
             'IVCurveFilePath':IVCurveData['IVCurveFilePath'],
             'TestTemperature':IVCurveData['TestTemperature'],
-            'Temperature': None,
+            'Temperature': -1,
             'RelativeModuleFinalResultsPath': os.path.relpath(self.TestResultEnvironmentObject.FinalModuleResultsPath,
                                                               self.TestResultEnvironmentObject.GlobalOverviewPath),
             'FulltestSubfolder': os.path.relpath(self.FinalResultsStoragePath,
@@ -522,20 +531,20 @@ class TestResult(GeneralTestResult):
 
             'initialCurrent': initialCurrent,
             'nCycles': None,
-            'CycleTempLow': None,
-            'CycleTempHigh': None,
+            'CycleTempLow': -1,
+            'CycleTempHigh': -1,
 
             #
             # added by Tommaso
             #
-            'nMaskDefects': None,
-            'nDeadPixels': None,
-            'nBumpDefects': None,
-            'nTrimDefects': None,
-            'nNoisyPixels': None,
-            'nGainDefPixels': None,
-            'nPedDefPixels': None,
-            'nPar1DefPixels': None,
+            'nMaskDefects': -1,
+            'nDeadPixels': -1,
+            'nBumpDefects': -1,
+            'nTrimDefects': -1,
+            'nNoisyPixels': -1,
+            'nGainDefPixels': -1,
+            'nPedDefPixels': -1,
+            'nPar1DefPixels': -1,
 
             'TestCenter': self.Attributes['TestCenter'],
             'Hostname': self.Attributes['Hostname'],
@@ -544,31 +553,32 @@ class TestResult(GeneralTestResult):
             # added by Felix for the new Overview Table
             #
             # for A/B/C sub gradings
-            'PixelDefectsNGradeA': None,
-            'PixelDefectsNGradeB': None,
-            'PixelDefectsNGradeC': None,
+            'PixelDefectsNGradeA': -1,
+            'PixelDefectsNGradeB': -1,
+            'PixelDefectsNGradeC': -1,
 
-            'NoiseNGradeA': None,
-            'NoiseNGradeB': None,
-            'NoiseNGradeC': None,
+            'NoiseNGradeA': -1,
+            'NoiseNGradeB': -1,
+            'NoiseNGradeC': -1,
 
-            'VcalWidthNGradeA': None,
-            'VcalWidthNGradeB': None,
-            'VcalWidthNGradeC': None,
+            'VcalWidthNGradeA': -1,
+            'VcalWidthNGradeB': -1,
+            'VcalWidthNGradeC': -1,
 
-            'GainNGradeA': None,
-            'GainNGradeB': None,
-            'GainNGradeC': None,
+            'GainNGradeA': -1,
+            'GainNGradeB': -1,
+            'GainNGradeC': -1,
 
-            'PedSpreadNGradeA': None,
-            'PedSpreadNGradeB': None,
-            'PedSpreadNGradeC': None,
+            'PedSpreadNGradeA': -1,
+            'PedSpreadNGradeB': -1,
+            'PedSpreadNGradeC': -1,
 
-            'Par1NGradeA': None,
-            'Par1NGradeB': None,
-            'Par1NGradeC': None,
+            'Par1NGradeA': -1,
+            'Par1NGradeB': -1,
+            'Par1NGradeC': -1,
         }
 
+        # check if any data is missing
         SubtestMissing = False
         Comment = ''
         try: 
@@ -580,6 +590,11 @@ class TestResult(GeneralTestResult):
         
         # pixel defects and performance parameters
         try:
+
+            # raise exception if any data is missing
+            if SubtestMissing:
+                raise Exception("Test data incomplete! => Module will be graded C")
+
             Row.update({
                 'PixelDefects': '{PixelDefects:d}'.format(PixelDefects=self.ResultData['SubTestResults']['Summary1'].ResultData['KeyValueDictPairs']['PixelDefects'][
                     'NumericValue']),
@@ -672,21 +687,46 @@ class TestResult(GeneralTestResult):
                 'Temperature': self.ResultData['SubTestResults']['Summary2'].ResultData['KeyValueDictPairs']['TempC'][
                     'Value']
                 })
-        except:
-            warnings.warn("Fulltest is incomplete! Module will be graded C")
-            SubtestMissing = True
 
-        # check if any data is missing
-        if SubtestMissing:
+            print "Test data is complete!"
+        except:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            # Start red color
+            sys.stdout.write("\x1b[31m")
+            sys.stdout.flush()
+            # Print traceback
+            traceback.print_exception(exc_type, exc_obj, exc_tb)
+            # Stop red color
+            sys.stdout.write("\x1b[0m")
+            sys.stdout.flush()
+
             grade = 'C'
-            Comment += 'Fulltest incomplete, graded C'
-           
+            Comment += 'Test incomplete!'
+
         #adding comment (if any) from manual grading
         try: 
             if self.ResultData['SubTestResults']['Grading'].ResultData['KeyValueDictPairs'].has_key('GradeComment'):
                 Comment += self.ResultData['SubTestResults']['Grading'].ResultData['KeyValueDictPairs']['GradeComment']['Value']
         except KeyError:
             pass 
+
+        try:
+            if self.ParentObject.CommentFromFile:
+                if len(Comment) < 1:
+                    Comment = self.ParentObject.CommentFromFile
+                else:
+                    Comment += "; " + self.ParentObject.CommentFromFile
+        except:
+            pass
+
+        try:
+            if self.CommentFromFile:
+                if len(Comment) < 1:
+                    Comment = self.CommentFromFile
+                else:
+                    Comment += "; " + self.CommentFromFile
+        except:
+            pass
 
         # fill final grade and comments
         Comment = Comment.strip().strip('/')
@@ -760,13 +800,11 @@ class TestResult(GeneralTestResult):
                 i2 = float(IVCurveData['CurrentAtVoltage150V'])
                 slope = float(IVCurveData['IVSlope'])
 
-                gradeiv = self.GradeIV(
-                    float(IVCurveData['RecalculatedCurrentAtVoltage100V']),
-                    float(IVCurveData['RecalculatedCurrentAtVoltage150V']),
-                    slope, 
-                    float(IVCurveData['RecalculatedToTemperature']
-                          ))
-
+                try:
+                    gradeiv = self.ResultData['SubTestResults']['Summary1'].ResultData['KeyValueDictPairs']['IVGrade']['Value']
+                except:
+                    gradeiv = 'None'
+                    print "error: Fulltest IV grade not found in 'Summary1'!"
 
                 iv = Test_IV(SESSION_ID=s.SESSION_ID,SENSOR_ID=sensor_id,
                              DATA_ID = ivdata_id.DATA_ID,
@@ -892,6 +930,8 @@ class TestResult(GeneralTestResult):
 #                    
 
         else:
+            if self.verbose:
+                print "INSERT ROW:", Row
             with self.TestResultEnvironmentObject.LocalDBConnection:
                 self.TestResultEnvironmentObject.LocalDBConnectionCursor.execute(
                     'DELETE FROM ModuleTestResults WHERE ModuleID = :ModuleID AND TestType=:TestType AND QualificationType=:QualificationType AND TestDate <= :TestDate',
