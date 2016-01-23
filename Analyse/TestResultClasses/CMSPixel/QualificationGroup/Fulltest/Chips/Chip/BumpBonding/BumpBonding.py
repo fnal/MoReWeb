@@ -52,7 +52,8 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             self.ResultData['Plot']['ROOTObject'].GetYaxis().SetTitleOffset(1.5);
             self.ResultData['Plot']['ROOTObject'].GetYaxis().CenterTitle();
             self.ResultData['Plot']['ROOTObject'].Draw();
-            startbin = self.ResultData['Plot']['ROOTObject'].FindBin(nSigma)
+            thr = nSigma
+            startbin = self.ResultData['Plot']['ROOTObject'].FindBin(thr)
             for bin in range(startbin, self.ResultData['Plot']['ROOTObject'].GetNbinsX()):
                 nBumpBondingProblems += self.ResultData['Plot']['ROOTObject'].GetBinContent(bin)
             self.Cut = ROOT.TCutG('bumpBondingThreshold', 2)
