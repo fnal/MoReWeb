@@ -27,7 +27,6 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         rms = -9999
         nBumpBondingProblems = 0;
         nSigma = self.TestResultEnvironmentObject.GradingParameters['BumpBondingProblemsNSigma']
-        thr = 0
         # TH1D
         ChipNo = self.ParentObject.Attributes['ChipNo']
         self.HistoDict = self.ParentObject.ParentObject.ParentObject.HistoDict
@@ -52,13 +51,12 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             self.ResultData['Plot']['ROOTObject'].GetYaxis().SetTitleOffset(1.5);
             self.ResultData['Plot']['ROOTObject'].GetYaxis().CenterTitle();
             self.ResultData['Plot']['ROOTObject'].Draw();
-            thr = nSigma
-            startbin = self.ResultData['Plot']['ROOTObject'].FindBin(thr)
-            for bin in range(startbin, self.ResultData['Plot']['ROOTObject'].GetNbinsX()):
+            startbin = self.ResultData['Plot']['ROOTObject'].FindBin(nSigma)
+            for bin in range(startbin, self.ResultData['Plot']['ROOTObject'].GetNbinsX() + 1):
                 nBumpBondingProblems += self.ResultData['Plot']['ROOTObject'].GetBinContent(bin)
             self.Cut = ROOT.TCutG('bumpBondingThreshold', 2)
-            self.Cut.SetPoint(0, thr, -1e9)
-            self.Cut.SetPoint(1, thr, +1e9)
+            self.Cut.SetPoint(0, nSigma, -1e9)
+            self.Cut.SetPoint(1, nSigma, +1e9)
             self.Cut.SetLineWidth(2)
             self.Cut.SetLineStyle(2)
             self.Cut.SetLineColor(ROOT.kRed)
@@ -70,7 +68,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         self.ResultData['KeyList'].append('Mean')
         self.ResultData['KeyValueDictPairs']['RMS']['Value'] = round(rms, 2)
         self.ResultData['KeyList'].append('RMS')
-        self.ResultData['KeyValueDictPairs']['Threshold']['Value'] = round(thr, 2)
+        self.ResultData['KeyValueDictPairs']['Threshold']['Value'] = round(nSigma, 2)
         self.ResultData['KeyList'].append('Threshold')
 
         if self.Attributes['isDigitalROC']:
