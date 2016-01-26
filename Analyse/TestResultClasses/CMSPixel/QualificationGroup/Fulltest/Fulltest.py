@@ -47,7 +47,7 @@ class TestResult(GeneralTestResult):
             self.ResultData['SubTestResultDictList'] = [
                 {  'Key': 'Chips',
                    'DisplayOptions': {
-                       'GroupWithNext': True,
+                       'GroupWithNext': False,
                        'Order': 1,
                    },
                    'InitialAttributes': {
@@ -165,6 +165,14 @@ class TestResult(GeneralTestResult):
                     'Order': 3,
                 }
             },
+            {
+                'Key': 'PixelAliveMap',
+                'DisplayOptions': {
+                    'Width': 4,
+                    'Order': 4,
+                }
+            },
+
         ]
         # self.ResultData['SubTestResultDictList'].append({'Key': 'Temperature'})
         if not self.Attributes['isDigital']:
