@@ -57,6 +57,59 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         return ChipGrade
 
     def PopulateResultData(self):
+        
+        if self.ParentObject.ParentObject.ParentObject.ParentObject.Attributes['QualificationType'] == 'PurdueTest':
+        
+            ChipNo = self.ParentObject.Attributes['ChipNo']
+        
+            self.ResultData['HiddenData']['DeadBumpList'] = self.ParentObject.ResultData['SubTestResults']['BumpBondingProblems'].ResultData['KeyValueDictPairs']['DeadBumps']['Value']
+            self.ResultData['HiddenData']['SpecialBumpBondingTestName'] = ''
+    
+            self.ResultData['HiddenData']['DeadPixelList'] = self.ParentObject.ResultData['SubTestResults']['PixelMap'].ResultData['KeyValueDictPairs']['DeadPixels']['Value']
+            self.ResultData['HiddenData']['ThrDefectList'] = self.ParentObject.ResultData['SubTestResults']['VcalThresholdTrimmed'].ResultData['KeyValueDictPairs']['TrimProblems']['Value']
+            self.ResultData['HiddenData']['DeadBumpList'] = self.ResultData['HiddenData']['DeadBumpList'] - self.ResultData['HiddenData']['DeadPixelList']
+            
+            self.ResultData['HiddenData']['TotalList'] = (
+                self.ResultData['HiddenData']['DeadBumpList'] |
+                self.ResultData['HiddenData']['DeadPixelList'] |
+                self.ResultData['HiddenData']['ThrDefectList']
+            )
+            
+            PixelDefectsGradeALimit = self.TestResultEnvironmentObject.GradingParameters['defectsB']
+            PixelDefectsGradeBLimit = self.TestResultEnvironmentObject.GradingParameters['defectsC']
+            totalDefects = len(self.ResultData['HiddenData']['TotalList'])
+            if totalDefects < PixelDefectsGradeALimit:
+                pixelDefectsGrade = 1
+            elif totalDefects < PixelDefectsGradeBLimit:
+                pixelDefectsGrade = 2
+            else:
+                pixelDefectsGrade = 3
+            GradeMapping = {1:'A', 2:'B', 3:'C'}
+            Grade = 'None'
+            try:
+                Grade = GradeMapping[pixelDefectsGrade]
+            except:
+                pass
+
+            print '\nChip %d Pixel Defects Grade %s'%(self.chipNo, Grade)
+
+            print '\ttotal: %4d'%len(self.ResultData['HiddenData']['TotalList'])
+            print '\tdead:  %4d'%len(self.ResultData['HiddenData']['DeadPixelList'])
+            print '\tbump:  %4d'%len(self.ResultData['HiddenData']['DeadBumpList'])
+            print '\ttrim:  %4d'%len(self.ResultData['HiddenData']['ThrDefectList'])
+
+            print '-'*78
+
+            self.ResultData['KeyValueDictPairs'] = {
+                'PixelDefectsGrade':{
+                    'Value': '%d'%pixelDefectsGrade,
+                    'Label': 'Pixel Defects Grade ROC'
+                },
+            }
+            self.ResultData['KeyList'] = ['PixelDefectsGrade']
+            return
+
+        
         ChipNo = self.ParentObject.Attributes['ChipNo']
 
         # get individual pixel defect lists
