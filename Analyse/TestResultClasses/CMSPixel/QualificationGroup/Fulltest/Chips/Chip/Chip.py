@@ -38,6 +38,17 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                     'Order':6,
                 }
                 },
+                {'Key':'Grading',
+                    'DisplayOptions':{
+                        'Show':False,
+                    }
+                },
+                {'Key':'Summary',
+                    'DisplayOptions':{
+                        'Order':8,
+                    }
+                },
+
             ]
             return
 
