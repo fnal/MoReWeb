@@ -18,6 +18,12 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             #print 'In Chips Parsing PurdueTest ...'
             self.ResultData['SubTestResultDictList'] += [
                 {
+                    'Key':'OpParameters',
+                    'DisplayOptions':{
+                        'Order':16,
+                    }
+                },
+                {
                     'Key':'PixelMap',
                     'DisplayOptions':{
                         'Order':1,
@@ -48,7 +54,6 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                         'Order':8,
                     }
                 },
-
             ]
             return
 
