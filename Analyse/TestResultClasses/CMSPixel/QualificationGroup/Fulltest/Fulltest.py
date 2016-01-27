@@ -100,18 +100,18 @@ class TestResult(GeneralTestResult):
                        'ModuleVersion': self.Attributes['ModuleVersion'],
                    },
                 },
-                #{
-                #    'Key': 'PixelAliveMap',
-                #    'DisplayOptions': {
-                #        'Width': 4,
-                #        'Order': 2,
-                #    }
-                #},
+                {
+                    'Key': 'PixelAliveMap',
+                    'DisplayOptions': {
+                        'Width': 4,
+                        'Order': 3,
+                    }
+                },
                 {
                     'Key': 'VcalThreshold',
                     'DisplayOptions': {
                         'Width': 4,
-                        'Order': 3,
+                        'Order': 5,
                     },
                    'InitialAttributes': {
                        'QualificationType': 'PurdueTest',
@@ -121,7 +121,7 @@ class TestResult(GeneralTestResult):
                     'Key': 'BumpBondingMap',
                     'DisplayOptions': {
                         'Width': 4,
-                        'Order': 4,
+                        'Order': 6,
                     },
                    'InitialAttributes': {
                        'QualificationType': 'PurdueTest',
@@ -176,7 +176,7 @@ class TestResult(GeneralTestResult):
                 {
                     'Key': 'Summary2',
                     'DisplayOptions': {
-                        'Order': 6,
+                        'Order': 7,
                     }
                 },
                 {
@@ -189,220 +189,233 @@ class TestResult(GeneralTestResult):
                 },
             ]
 
-
-            return 
         
-
-        self.ResultData['SubTestResultDictList'] = [
-            {
-                'Key': 'ConfigFiles',
-                'DisplayOptions': {
-                    'Show': False,
-                }
-            },  
-            {
-                'Key': 'DigitalCurrent',
-                'DisplayOptions': {
-                    'Order': 20,
-                    'Width': 2
-                }
-            },            
-            {
-                'Key': 'GradingParameters',
-                'DisplayOptions': {
-                    'Order': 110,
-                    'Width': 1
-                }
-            },
-            {
-                'Key': 'AnalogCurrent',
-                'DisplayOptions': {
-                    'Order': 21,
-                    'Width': 2
-                }
-            },
-            {
-                'Key': 'IanaLoss',
-                'DisplayOptions': {
-                    'Order': 22,
-                    'Width': 1
-                }
-            },
-            {
-                'Key': 'Fitting',
-                'DisplayOptions': {
-                    'GroupWithNext': False,
-                    'Order': 99,
-                    'Show': False,
-                },
-                'InitialAttributes': {
-                    'ModuleVersion': self.Attributes['ModuleVersion'],
-                    'NumberOfChips': self.Attributes['NumberOfChips'],
-                },
-            },
-            {
-                'Key': 'Temperature',
-                'DisplayOptions': {
-                    'GroupWithNext': False,
-                    'Width': 2,
-                    'Order': 25,
-                },
-            },
-            {
-                'Key': 'Chips',
-                'DisplayOptions': {
-                    'GroupWithNext': True,
-                    'Order': 1,
-                },
-                'InitialAttributes': {
-                    'ModuleVersion': self.Attributes['ModuleVersion'],
-                },
-            },
-
-            {
-                'Key': 'BumpBondingMap',
-                'DisplayOptions': {
-                    'Width': 4,
-                    'Order': 5,
-                }
-            },
-            {
-                'Key': 'VcalThreshold',
-                'DisplayOptions': {
-                    'Width': 4,
-                    'Order': 3,
-                }
-            },
-            {
-                'Key': 'PixelAliveMap',
-                'DisplayOptions': {
-                    'Width': 4,
-                    'Order': 4,
-                }
-            },
-
-        ]
-        # self.ResultData['SubTestResultDictList'].append({'Key': 'Temperature'})
-        if not self.Attributes['isDigital']:
-            self.ResultData['SubTestResultDictList'].append({
-                'Key': 'AddressLevelOverview',
-                'DisplayOptions': {
-                    'Order': 2,
-                }
-            })
         else:
-            self.ResultData['SubTestResultDictList'].append(
+            self.ResultData['SubTestResultDictList'] = [
                 {
-                    'Key': 'Dummy0',
-                    'Module': 'Dummy',
+                    'Key': 'ConfigFiles',
+                    'DisplayOptions': {
+                        'Show': False,
+                    }
+                },  
+                {
+                    'Key': 'DigitalCurrent',
+                    'DisplayOptions': {
+                        'Order': 20,
+                        'Width': 2
+                    }
+                },            
+                {
+                    'Key': 'GradingParameters',
+                    'DisplayOptions': {
+                        'Order': 110,
+                        'Width': 1
+                    }
+                },
+                {
+                    'Key': 'AnalogCurrent',
+                    'DisplayOptions': {
+                        'Order': 21,
+                        'Width': 2
+                    }
+                },
+                {
+                    'Key': 'IanaLoss',
+                    'DisplayOptions': {
+                        'Order': 22,
+                        'Width': 1
+                    }
+                },
+                {
+                    'Key': 'Fitting',
+                    'DisplayOptions': {
+                        'GroupWithNext': False,
+                        'Order': 99,
+                        'Show': False,
+                    },
+                    'InitialAttributes': {
+                        'ModuleVersion': self.Attributes['ModuleVersion'],
+                        'NumberOfChips': self.Attributes['NumberOfChips'],
+                    },
+                },
+                {
+                    'Key': 'Temperature',
+                    'DisplayOptions': {
+                        'GroupWithNext': False,
+                        'Width': 2,
+                        'Order': 25,
+                    },
+                },
+                {
+                    'Key': 'Chips',
+                    'DisplayOptions': {
+                        'GroupWithNext': True,
+                        'Order': 1,
+                    },
+                    'InitialAttributes': {
+                        'ModuleVersion': self.Attributes['ModuleVersion'],
+                    },
+                },
+
+            ]
+            # self.ResultData['SubTestResultDictList'].append({'Key': 'Temperature'})
+            if not self.Attributes['isDigital']:
+                self.ResultData['SubTestResultDictList'].append({
+                    'Key': 'AddressLevelOverview',
                     'DisplayOptions': {
                         'Order': 2,
                     }
-                },
-            )
+                })
+            else:
+                self.ResultData['SubTestResultDictList'].append(
+                    {
+                        'Key': 'Dummy0',
+                        'Module': 'Dummy',
+                        'DisplayOptions': {
+                            'Order': 2,
+                        }
+                    },
+                )
 
-        if self.Attributes['IncludeIVCurve']:
+            if self.Attributes['IncludeIVCurve']:
+                self.ResultData['SubTestResultDictList'] += [
+                    {
+                        'Key': 'IVCurve',
+                        'DisplayOptions': {
+                            'Order': 8,
+                            'Width': 3,
+                        }
+                    },
+                ]
+            else:
+                self.ResultData['SubTestResultDictList'] += [
+                    {
+                        'Key': 'Dummy1',
+                        'Module': 'Dummy',
+                        'DisplayOptions': {
+                            'Order': 8,
+                            'Width': 3,
+                        }
+                    },
+                ]
+
             self.ResultData['SubTestResultDictList'] += [
+                {'Key': 'Noise', 'DisplayOptions': {'Order': 9, }},
+                {'Key': 'VcalThresholdWidth', 'DisplayOptions': {'Order': 10, }},
+                {'Key': 'RelativeGainWidth', 'DisplayOptions': {'Order': 11, }},
+                {'Key': 'PedestalSpread', 'DisplayOptions': {'Order': 12, }},
+            ]
+
+            if self.Attributes['ModuleVersion'] == 1:
+                self.ResultData['SubTestResultDictList'] += [
+                    {'Key': 'Parameter1', 'DisplayOptions': {'Order': 13, }}
+                ]
+
+            self.ResultData['SubTestResultDictList'] += [
+                     {
+                    'Key': 'Grading',
+                    'DisplayOptions': {
+                        'Show': False,
+                    }
+                },
                 {
-                    'Key': 'IVCurve',
+                    'Key': 'TBM',
+                    'DisplayOptions': {
+                        'Order': 100,
+                        'Width': 1,
+                    }
+                },
+                {
+                    'Key': 'Errors',
+                    'DisplayOptions': {
+                        'Order': 101,
+                        'Width': 1,
+                    }
+                },
+                {
+                    'Key': 'Summary1',
+                    'DisplayOptions': {
+                        'Order': 4,
+                    }
+                },
+                {
+                    'Key': 'Summary2',
+                    'DisplayOptions': {
+                        'Order': 7,
+                    }
+                },
+                {
+                    'Key': 'Summary3',
                     'DisplayOptions': {
                         'Order': 8,
-                        'Width': 3,
+                    }
+                },
+                {
+                    'Key': 'SummaryROCs',
+                    'DisplayOptions': {
+                        'Width': 5,
+                    }
+                },
+                {
+                    'Key': 'Logfile',
+                    'DisplayOptions': {
+                        'Width': 1,
+                        'Order': 120,
+                        'Show': True,
                     }
                 },
             ]
-        else:
+
+            for ReadbackParameter in ['par0vd', 'par1vd','par0va','par1va','par0rbia','par1rbia','par0tbia','par1tbia','par2tbia']:
+                self.ResultData['SubTestResultDictList'].append({
+                    'Key': 'ReadbackParameter_%s'%ReadbackParameter,
+                    'Module': 'ReadbackParameter',
+                    'InitialAttributes': {
+                        'Parameter': ReadbackParameter,
+                        'StorageKey': 'ReadbackParameter_%s'%ReadbackParameter,
+                    },
+                    'DisplayOptions': {
+                        'Order': 90,
+                        'Width': 1,
+                    }
+                })
+            
             self.ResultData['SubTestResultDictList'] += [
                 {
-                    'Key': 'Dummy1',
-                    'Module': 'Dummy',
+                    'Key': 'PixelAliveMap',
                     'DisplayOptions': {
-                        'Order': 8,
-                        'Width': 3,
+                        'Width': 4,
+                        'Order': 3,
+                    },
+                    'InitialAttributes': {
+                        'QualificationType': 'PurdueTest',
                     }
+
                 },
-            ]
+                {
+                    'Key': 'BumpBondingMap',
+                    'DisplayOptions': {
+                        'Width': 4,
+                        'Order': 6,
+                    },
+                    'InitialAttributes': {
+                        'QualificationType': 'PurdueTest',
+                    }
 
-        self.ResultData['SubTestResultDictList'] += [
-            {'Key': 'Noise', 'DisplayOptions': {'Order': 9, }},
-            {'Key': 'VcalThresholdWidth', 'DisplayOptions': {'Order': 10, }},
-            {'Key': 'RelativeGainWidth', 'DisplayOptions': {'Order': 11, }},
-            {'Key': 'PedestalSpread', 'DisplayOptions': {'Order': 12, }},
-        ]
-
-        if self.Attributes['ModuleVersion'] == 1:
-            self.ResultData['SubTestResultDictList'] += [
-                {'Key': 'Parameter1', 'DisplayOptions': {'Order': 13, }}
-            ]
-
-        self.ResultData['SubTestResultDictList'] += [
-        	     {
-                'Key': 'Grading',
-                'DisplayOptions': {
-                    'Show': False,
-                }
-            },
-            {
-                'Key': 'TBM',
-                'DisplayOptions': {
-                    'Order': 100,
-                    'Width': 1,
-                }
-            },
-            {
-                'Key': 'Errors',
-                'DisplayOptions': {
-                    'Order': 101,
-                    'Width': 1,
-                }
-            },
-            {
-                'Key': 'Summary1',
-                'DisplayOptions': {
-                    'Order': 4,
-                }
-            },
-            {
-                'Key': 'Summary2',
-                'DisplayOptions': {
-                    'Order': 6,
-                }
-            },
-            {
-                'Key': 'Summary3',
-                'DisplayOptions': {
-                    'Order': 7,
-                }
-            },
-            {
-                'Key': 'SummaryROCs',
-                'DisplayOptions': {
-                    'Width': 5,
-                }
-            },
-            {
-                'Key': 'Logfile',
-                'DisplayOptions': {
-                    'Width': 1,
-                    'Order': 120,
-                    'Show': True,
-                }
-            },
-        ]
-
-        for ReadbackParameter in ['par0vd', 'par1vd','par0va','par1va','par0rbia','par1rbia','par0tbia','par1tbia','par2tbia']:
-            self.ResultData['SubTestResultDictList'].append({
-                'Key': 'ReadbackParameter_%s'%ReadbackParameter,
-                'Module': 'ReadbackParameter',
-                'InitialAttributes': {
-                    'Parameter': ReadbackParameter,
-                    'StorageKey': 'ReadbackParameter_%s'%ReadbackParameter,
                 },
-                'DisplayOptions': {
-                    'Order': 90,
-                    'Width': 1,
-                }
-            })
+                {
+                    'Key': 'VcalThreshold',
+                    'DisplayOptions': {
+                        'Width': 4,
+                        'Order': 5,
+                    },
+                    'InitialAttributes': {
+                        'QualificationType': 'PurdueTest',
+                    }
+
+                },
+
+            ]
 
     def MergePyxarData(self):
         self.check_Test_Software()
