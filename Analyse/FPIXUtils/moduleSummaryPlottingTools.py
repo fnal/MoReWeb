@@ -133,7 +133,7 @@ def findZRange(plots):
     nSigma = 5
 
     for roc in range(16):
-        plot = plots[roc].Clone()
+        plot = plots[roc]
 
         # treat special cases first - don't alter range
         if "PixelAlive" in plot.GetName() or \
@@ -185,7 +185,6 @@ def findZRange(plots):
             zMax = rocMax
         if rocMin < zMin:
             zMin = rocMin
-
     # fix the ranges for PixelAlive type tests
     if zMax - zMin < 0.0001:
         zMin=0
