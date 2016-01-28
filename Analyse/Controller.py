@@ -13,6 +13,10 @@ import ConfigParser
 import datetime
 import subprocess
 
+# INCLUDE PATH TO LOCAL INSTALLATION OF FPIXUTILS PACKAGE
+# HERE WE ASSUME 'FPIXUtils' IS IN THE SAME DIRECTORY AS 'MoReWeb'
+sys.path.append('../../')
+
 #arg parse to analyse a single Fulltest
 parser = argparse.ArgumentParser(description='MORE web Controller: an analysis software for CMS pixel modules and ROCs')
 parser.add_argument('-FT','--singleFulltest',dest='singleFulltestPath',metavar='PATH',
