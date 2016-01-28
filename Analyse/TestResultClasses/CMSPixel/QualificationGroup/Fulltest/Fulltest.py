@@ -101,6 +101,13 @@ class TestResult(GeneralTestResult):
                    },
                 },
                 {
+                    'Key': 'IVCurve',
+                    'DisplayOptions': {
+                        'Order': 8,
+                        'Width': 3,
+                    }
+                },
+                {
                     'Key': 'PixelAliveMap',
                     'DisplayOptions': {
                         'Width': 4,
@@ -249,7 +256,7 @@ class TestResult(GeneralTestResult):
                 {
                     'Key': 'Chips',
                     'DisplayOptions': {
-                        'GroupWithNext': True,
+                        'GroupWithNext': False,
                         'Order': 1,
                     },
                     'InitialAttributes': {
