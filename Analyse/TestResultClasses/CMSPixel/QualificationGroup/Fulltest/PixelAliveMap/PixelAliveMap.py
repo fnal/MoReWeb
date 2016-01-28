@@ -5,16 +5,12 @@ from FPIXUtils.moduleSummaryPlottingTools import *
 
 class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
     def CustomInit(self):
-        self.Name='CMSPixel_QualificationGroup_Purduetest_Chips_Chip_PixelAliveMap_TestResult'
+        self.Name='CMSPixel_QualificationGroup_Fulltest_Chips_Chip_PixelAliveMap_TestResult'
         self.NameSingle='PixelAliveMap'
         self.Attributes['TestedObjectType'] = 'CMSPixel_Module'
 
-
-
     def PopulateResultData(self):
-        ROOT.gPad.SetLogy(0);
-        ROOT.gStyle.SetOptStat(0)
-        plots = [] 
+        plots = [None] * 16
         for i in self.ParentObject.ResultData['SubTestResults']['Chips'].ResultData['SubTestResults']:
             ChipTestResultObject = self.ParentObject.ResultData['SubTestResults']['Chips'].ResultData['SubTestResults'][i]
             histo = ChipTestResultObject.ResultData['SubTestResults']['PixelMap'].ResultData['Plot']['ROOTObject']
@@ -22,12 +18,9 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                 print 'cannot get PixelMap histo for chip ',ChipTestResultObject.Attributes['ChipNo']
                 continue
             chipNo = ChipTestResultObject.Attributes['ChipNo']
-            histoName = 'PixelAlive_ROC%s' %chipNo
+            histoName = 'PixelAlive_Summary%s' %chipNo
             histo.SetName(histoName)
-            plots.append(histo)
-
-        # sort the plot from ROC0 to ROC15, in order to be used for merging
-        plots = sorted(plots, key=lambda h:int(h.GetName().split('ROC')[1]))
+            plots[chipNo] = histo
                
         summaryPlot = makeMergedPlot(plots)
         zRange = findZRange(plots)
