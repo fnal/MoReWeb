@@ -552,6 +552,7 @@ class TestResult(GeneralTestResult):
                 'DisplayOptions': {
                     'Width': 4,
                     'Order': 40,
+                    'Show': False
                 },
                 'InitialAttributes': {
                     'NumberOfChips': self.Attributes['NumberOfChips'],
@@ -564,6 +565,7 @@ class TestResult(GeneralTestResult):
                 'DisplayOptions': {
                     'Width': 1,
                     'Order': 40,
+                    'Show': False
                 },
                 'InitialAttributes': {
                     'NumberOfChips': self.Attributes['NumberOfChips'],
