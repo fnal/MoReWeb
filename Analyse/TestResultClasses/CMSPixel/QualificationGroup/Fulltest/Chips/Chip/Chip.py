@@ -14,7 +14,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         # order!
         self.ResultData['SubTestResultDictList'] = []
 
-        if self.ParentObject.ParentObject.ParentObject.Attributes['QualificationType'] == 'PurdueTest':
+        if 'Purdue' in self.ParentObject.ParentObject.ParentObject.Attributes['QualificationType']:
             #print 'In Chips Parsing PurdueTest ...'
             self.ResultData['SubTestResultDictList'] += [
                 {
@@ -205,10 +205,6 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                     'DisplayOptions':{
                     }
                 },
-                {'Key':'DacDac',
-                    'DisplayOptions':{
-                    }
-                },
                 {'Key':'ReadbackCal',
                     'DisplayOptions':{
                         
@@ -219,6 +215,10 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                     }
                 },
                 {'Key':'ReadbackCalIana',
+                },
+                {'Key':'DacDac',
+                    'DisplayOptions':{
+                    }
                 }
 
             ]

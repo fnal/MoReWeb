@@ -58,7 +58,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
     def PopulateResultData(self):
         
-        if self.ParentObject.ParentObject.ParentObject.ParentObject.Attributes['QualificationType'] == 'PurdueTest':
+        if 'Purdue' in self.ParentObject.ParentObject.ParentObject.ParentObject.Attributes['QualificationType']:
         
             ChipNo = self.ParentObject.Attributes['ChipNo']
         

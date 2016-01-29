@@ -41,8 +41,7 @@ class TestResult(GeneralTestResult):
             print 'Analysing Fulltest with the following Attributes:'
             for name, value in self.Attributes.items():
                 print "\t%25s:  %s" % (name, value)
-
-        if self.ParentObject.Attributes['QualificationType'] == 'PurdueTest':
+        if 'Purdue' in self.ParentObject.Attributes['QualificationType']:
             #print 'Parsing PurdueTest ...'
             self.ResultData['SubTestResultDictList'] = [
                 {
@@ -762,7 +761,7 @@ class TestResult(GeneralTestResult):
                         'Value'],
                 })
                        
-            if self.ParentObject.Attributes['QualificationType'] != 'PurdueTest':
+            if 'Purdue' not in self.ParentObject.Attributes['QualificationType']:
                 Row.update({
                     'nMaskDefects':
                         self.ResultData['SubTestResults']['Summary1'].ResultData['KeyValueDictPairs']['MaskDefects']['Value'],

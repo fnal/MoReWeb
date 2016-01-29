@@ -17,7 +17,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
     def PopulateResultData(self):
     
-        if self.ParentObject.ParentObject.ParentObject.ParentObject.Attributes['QualificationType'] == 'PurdueTest':
+        if 'Purdue' in self.ParentObject.ParentObject.ParentObject.ParentObject.Attributes['QualificationType']:
             self.ResultData['KeyValueDictPairs'] = {
                 'Total': {
                     'Value':'{0:1.0f}'.format(len(self.ParentObject.ResultData['SubTestResults']['Grading'].ResultData['HiddenData']['TotalList'])),
