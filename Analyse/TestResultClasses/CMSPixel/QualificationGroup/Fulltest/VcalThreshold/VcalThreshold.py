@@ -28,10 +28,5 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         self.Canvas = setupSummaryCanvas(summaryPlot)
 
         self.ResultData['Plot']['Format'] = 'png'
-
-        if self.SavePlotFile:
-            self.Canvas.SaveAs(self.GetPlotFileName())
-            print 'Saved ', self.GetPlotFileName()
-        self.ResultData['Plot']['Enabled'] = 1
         self.Title = 'Vcal Threshold'
-        self.ResultData['Plot']['ImageFile'] = self.GetPlotFileName()
+        self.SaveCanvas()
