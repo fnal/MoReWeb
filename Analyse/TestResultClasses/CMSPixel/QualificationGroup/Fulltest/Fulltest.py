@@ -427,7 +427,8 @@ class TestResult(GeneralTestResult):
 
     def OpenFileHandle(self):
         self.check_Test_Software()
-        fileHandlePath = self.RawTestSessionDataPath + '/commander_Fulltest.root'
+#        fileHandlePath = self.RawTestSessionDataPath + '/commander_Fulltest.root'
+        fileHandlePath = self.RawTestSessionDataPath + '/commander_FPIXTest.root'
         self.FileHandle = ROOT.TFile.Open(fileHandlePath)
         if not self.FileHandle:
             print 'problem to find %s' % fileHandlePath
