@@ -343,6 +343,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                 nKeys += 1
         key += '_%s' % (nKeys)
         directory = '%03d' % index + '_%s_%s' % (test.testname, test.environment.name)
+        pcheck = test.testname
         tests.append({
             'Key': key,
             'Module': 'Fulltest',
@@ -362,6 +363,13 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         })
         if test.environment.temperature != 17:
             tests[-1]['InitialAttributes']['recalculateCurrentTo'] = 17
+        
+        if 'Purdue' in pcheck:
+            index -= 1
+            tests[-1]['InitialAttributes']['IncludeIVCurve'] = True
+            tests[-1]['InitialAttributes']['IVCurveSubDirectory'] = '%03d_IV_p17' % (index)
+            index += 1
+
         test = test.next()
         index += 1
         if test and 'IV' in test.testname and test.environment.name == environment.name:

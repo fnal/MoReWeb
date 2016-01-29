@@ -64,11 +64,11 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                     ModuleGrade = 3
 
                 BumpBondingDefectsROC = i['TestResultObject'].ResultData['SubTestResults']['Grading'].ResultData['HiddenData']['BumpBondingDefects']['Value']
-                NoiseDefectsROC = i['TestResultObject'].ResultData['SubTestResults']['Grading'].ResultData['HiddenData']['NoiseDefects']['Value']
+                #NoiseDefectsROC = i['TestResultObject'].ResultData['SubTestResults']['Grading'].ResultData['HiddenData']['NoiseDefects']['Value']
                 HotPixelDefectsROC = i['TestResultObject'].ResultData['SubTestResults']['Grading'].ResultData['HiddenData']['HotPixelDefects']['Value']
 
                 BumpBondingDefectsROC = int(BumpBondingDefectsROC) if BumpBondingDefectsROC is not None else 0
-                NoiseDefectsROC = int(NoiseDefectsROC) if NoiseDefectsROC is not None else 0
+                #NoiseDefectsROC = int(NoiseDefectsROC) if NoiseDefectsROC is not None else 0
                 HotPixelDefectsROC = int(HotPixelDefectsROC) if HotPixelDefectsROC is not None else 0
 
                 # total pixel defects per ROC
@@ -84,19 +84,19 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
                 # count number of pixel defects per module
                 BumpBondingDefects += BumpBondingDefectsROC
-                NoiseDefects += NoiseDefectsROC
+                #NoiseDefects += NoiseDefectsROC
                 HotPixelDefects += HotPixelDefectsROC
 
                 # get ROC pixel defect lists
                 HotPixelsListROC = i['TestResultObject'].ResultData['SubTestResults']['Grading'].ResultData['HiddenData']['HotPixelDefectsList']['Value']
                 BumpBondingDefectPixelsListROC = i['TestResultObject'].ResultData['SubTestResults']['Grading'].ResultData['HiddenData']['BumpBondingDefectsList']['Value']
-                NoiseDefectPixelsListROC = i['TestResultObject'].ResultData['SubTestResults']['Grading'].ResultData['HiddenData']['NoisePixelsList']['Value']
+                #NoiseDefectPixelsListROC = i['TestResultObject'].ResultData['SubTestResults']['Grading'].ResultData['HiddenData']['NoisePixelsList']['Value']
                 TotalDefectPixelsListROC = i['TestResultObject'].ResultData['SubTestResults']['Grading'].ResultData['HiddenData']['TotalPixelDefectsList']['Value']
 
                 # append to pixel defects list for module
                 HotPixelsList = HotPixelsList | HotPixelsListROC
                 BumpBondingDefectPixelsList = BumpBondingDefectPixelsList | BumpBondingDefectPixelsListROC
-                NoiseDefectPixelsList = NoiseDefectPixelsList | NoiseDefectPixelsListROC
+                #NoiseDefectPixelsList = NoiseDefectPixelsList | NoiseDefectPixelsListROC
                 TotalDefectPixelsList = TotalDefectPixelsList | TotalDefectPixelsListROC
 
                 # mean efficiency
@@ -118,18 +118,19 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                     ROCsWithReadoutProblems += 1
 
                 # mean noise
-                if len(self.ParentObject.Attributes['Rates']['HRSCurves']) > 0:
-                    Rate = self.ParentObject.Attributes['Rates']['HRSCurves'][0]
+                #if len(self.ParentObject.Attributes['Rates']['HRSCurves']) > 0:
+                #    Rate = self.ParentObject.Attributes['Rates']['HRSCurves'][0]
+                #
+                #    NoiseList = []
+                #    for i in self.ParentObject.ResultData['SubTestResults']['Chips'].ResultData['SubTestResults']:
+                #        ChipTestResultObject = self.ParentObject.ResultData['SubTestResults']['Chips'].ResultData['SubTestResults'][i]
+                #        Noise = ChipTestResultObject.ResultData['SubTestResults']['Grading'].ResultData['HiddenData']
+                #       ['Noise_{Rate}'.format(Rate=Rate)]
+                #        NoiseList.append(Noise)
 
-                    NoiseList = []
-                    for i in self.ParentObject.ResultData['SubTestResults']['Chips'].ResultData['SubTestResults']:
-                        ChipTestResultObject = self.ParentObject.ResultData['SubTestResults']['Chips'].ResultData['SubTestResults'][i]
-                        Noise = ChipTestResultObject.ResultData['SubTestResults']['Grading'].ResultData['HiddenData']['Noise_{Rate}'.format(Rate=Rate)]
-                        NoiseList.append(Noise)
-
-                    MeanNoise = sum(NoiseList) / float(len(NoiseList))
-                else:
-                    MeanNoise = -1
+                #    MeanNoise = sum(NoiseList) / float(len(NoiseList))
+                #else:
+                #    MeanNoise = -1
         except:
             TestIncomplete = True
             # Start red color

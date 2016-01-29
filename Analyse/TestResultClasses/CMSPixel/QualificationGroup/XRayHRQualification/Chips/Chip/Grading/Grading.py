@@ -400,11 +400,11 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
         ### Total Pixel Defects Grading ###
         try:
-            NoiseRateGrading = max(self.ParentObject.ParentObject.ParentObject.Attributes['Rates']['HRSCurves'])
+            #NoiseRateGrading = max(self.ParentObject.ParentObject.ParentObject.Attributes['Rates']['HRSCurves'])
             BumpBondingRateGrading = max(self.ParentObject.ParentObject.ParentObject.Attributes['Rates']['HRData'])
             HotPixelRateGrading = max(self.ParentObject.ParentObject.ParentObject.Attributes['Rates']['HRData'])
 
-            NoisePixelsList = self.ParentObject.ResultData['SubTestResults']['SCurveWidths_{Rate}'.format(Rate=NoiseRateGrading)].ResultData['HiddenData']['ListOfNoisyPixels']['Value']
+            #NoisePixelsList = self.ParentObject.ResultData['SubTestResults']['SCurveWidths_{Rate}'.format(Rate=NoiseRateGrading)].ResultData['HiddenData']['ListOfNoisyPixels']['Value']
             BumpBondingDefectPixelsList = self.ParentObject.ResultData['SubTestResults']['BumpBondingDefects_{Rate}'.format(Rate=BumpBondingRateGrading)].ResultData['HiddenData']['ListOfDefectivePixels']['Value']
             HotPixelsList = self.ParentObject.ResultData['SubTestResults']['HotPixelMap_{Rate}'.format(Rate=HotPixelRateGrading)].ResultData['HiddenData']['ListOfHotPixels']['Value']
         except:
@@ -425,7 +425,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             sys.stdout.flush()
 
 
-        TotalPixelDefectsList = BumpBondingDefectPixelsList | NoisePixelsList | HotPixelsList
+        TotalPixelDefectsList = BumpBondingDefectPixelsList | HotPixelsList
         TotalPixelDefects = len(TotalPixelDefectsList)
 
         self.ResultData['HiddenData']['BumpBondingDefectsList'] = {
@@ -435,10 +435,6 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         self.ResultData['HiddenData']['HotPixelDefectsList'] = {
             'Label': 'HotPixelDefectsList',
             'Value': HotPixelsList,
-        }
-        self.ResultData['HiddenData']['NoisePixelsList'] = {
-            'Label': 'NoisePixelsList',
-            'Value': NoisePixelsList,
         }
         self.ResultData['HiddenData']['TotalPixelDefectsList'] = {
             'Label': 'TotalPixelDefectsList',
@@ -451,11 +447,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         self.ResultData['HiddenData']['HotPixelDefects'] = {
             'Label': 'Hot Pixels',
             'Value': len(HotPixelsList),
-        }
-        self.ResultData['HiddenData']['NoiseDefects'] = {
-            'Label': 'Noisy Pixels which exceed noise_thr_C=%d'%self.TestResultEnvironmentObject.GradingParameters['XRayHighRate_SCurve_Noise_Threshold_C'],
-            'Value': len(NoisePixelsList),
-        }        
+        }      
         self.ResultData['HiddenData']['PixelDefects'] = {
             'Label': 'Total Pixel Defects',
             'Value': TotalPixelDefects,

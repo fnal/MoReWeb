@@ -41,8 +41,7 @@ class TestResult(GeneralTestResult):
             print 'Analysing Fulltest with the following Attributes:'
             for name, value in self.Attributes.items():
                 print "\t%25s:  %s" % (name, value)
-
-        if self.ParentObject.Attributes['QualificationType'] == 'PurdueTest':
+        if 'Purdue' in self.ParentObject.Attributes['QualificationType']:
             #print 'Parsing PurdueTest ...'
             self.ResultData['SubTestResultDictList'] = [
                 {
@@ -99,6 +98,13 @@ class TestResult(GeneralTestResult):
                    'InitialAttributes': {
                        'ModuleVersion': self.Attributes['ModuleVersion'],
                    },
+                },
+                {
+                    'Key': 'IVCurve',
+                    'DisplayOptions': {
+                        'Order': 8,
+                        'Width': 3,
+                    }
                 },
                 {
                     'Key': 'PixelAliveMap',
@@ -249,7 +255,7 @@ class TestResult(GeneralTestResult):
                 {
                     'Key': 'Chips',
                     'DisplayOptions': {
-                        'GroupWithNext': True,
+                        'GroupWithNext': False,
                         'Order': 1,
                     },
                     'InitialAttributes': {
@@ -756,7 +762,7 @@ class TestResult(GeneralTestResult):
                         'Value'],
                 })
                        
-            if self.ParentObject.Attributes['QualificationType'] != 'PurdueTest':
+            if 'Purdue' not in self.ParentObject.Attributes['QualificationType']:
                 Row.update({
                     'nMaskDefects':
                         self.ResultData['SubTestResults']['Summary1'].ResultData['KeyValueDictPairs']['MaskDefects']['Value'],
