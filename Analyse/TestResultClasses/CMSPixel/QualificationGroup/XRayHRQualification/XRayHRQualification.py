@@ -593,6 +593,7 @@ class TestResult(GeneralTestResult):
                 'DisplayOptions': {
                     'Width': 1,
                     'Order': 7,
+                    'Show': False,
                 },
                 'InitialAttributes': {
                     'Rate': Rate,
@@ -607,6 +608,7 @@ class TestResult(GeneralTestResult):
                 'DisplayOptions': {
                     'Width': 1,
                     'Order': 8,
+                    'Show': False,
                 },
                 'InitialAttributes': {
                     'Rate': Rate,
@@ -651,6 +653,7 @@ class TestResult(GeneralTestResult):
                 'DisplayOptions': {
                     'Width': 4,
                     'Order': 20,
+                    'Show': False,
                 },
                 'InitialAttributes': {
                     'Rate': Rate,
@@ -664,6 +667,7 @@ class TestResult(GeneralTestResult):
                 'DisplayOptions': {
                     'Width': 1,
                     'Order': 20,
+                    'Show': False,
                 },
                 'InitialAttributes': {
                     'Rate': Rate,
