@@ -1,5 +1,7 @@
 import ROOT
 import AbstractClasses
+from FPIXUtils.moduleSummaryPlottingTools import *
+
 
 class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
     def CustomInit(self):
@@ -8,8 +10,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         self.Attributes['TestedObjectType'] = 'CMSPixel_Module'
 
     def PopulateResultData(self):
-        ROOT.gPad.SetLogy(0)
-        ROOT.gStyle.SetOptStat(0)
+        plots = [None] * 16
 
         xBins = 8 * self.nCols + 1
         yBins = 2 * self.nRows + 1
@@ -18,31 +19,28 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         for i in self.ParentObject.ResultData['SubTestResults']['Chips'].ResultData['SubTestResults']:
             ChipTestResultObject = self.ParentObject.ResultData['SubTestResults']['Chips'].ResultData['SubTestResults'][i]
             histo = ChipTestResultObject.ResultData['SubTestResults']['EfficiencyMap_{Rate}'.format(Rate=self.Attributes['Rate'])].ResultData['Plot']['ROOTObject']
+            if not histo:
+                print 'cannot get', 'EfficiencyMap_{Rate}'.format(Rate=self.Attributes['Rate']), 'histo for chip ',ChipTestResultObject.Attributes['ChipNo']
+                continue
             chipNo = ChipTestResultObject.Attributes['ChipNo']
+            histoName = 'EfficiencyMap_%s' %self.Attributes['Rate'] + '_Summary%s'  %chipNo
+            histo.SetName(histoName)
+            plots[chipNo] = histo
 
-            if histo:
-                for col in range(self.nCols): 
-                    for row in range(self.nRows):
-                        result = histo.GetBinContent(col + 1, row + 1)
-                        self.UpdatePlot(chipNo, col, row, result)
+            for col in range(self.nCols):
+                for row in range(self.nRows):
+                    result = histo.GetBinContent(col + 1, row + 1)
+                    self.UpdatePlot(chipNo, col, row, result)
 
-        if self.ResultData['Plot']['ROOTObject']:
-            self.ResultData['Plot']['ROOTObject'].SetTitle("")
-            self.ResultData['Plot']['ROOTObject'].GetXaxis().SetTitle("Column No.")
-            self.ResultData['Plot']['ROOTObject'].GetYaxis().SetTitle("Row No.")
-            self.ResultData['Plot']['ROOTObject'].GetXaxis().CenterTitle()
-            self.ResultData['Plot']['ROOTObject'].GetYaxis().SetTitleOffset(1.5)
-            self.ResultData['Plot']['ROOTObject'].GetYaxis().CenterTitle()
-            self.ResultData['Plot']['ROOTObject'].GetZaxis().SetTitle("efficiency")
-            self.ResultData['Plot']['ROOTObject'].GetZaxis().SetTitleOffset(0.5)
-            self.ResultData['Plot']['ROOTObject'].GetZaxis().CenterTitle()
-            self.ResultData['Plot']['ROOTObject'].Draw('colz')
-
+        summaryPlot = makeMergedPlot(plots)
+#        zRange = findZRange(plots)
+        setZRange(summaryPlot,[0,50]) # don't ask me why...
+        self.Canvas = setupSummaryCanvas(summaryPlot)
 
         self.ResultData['Plot']['Format'] = 'png'
-
         self.Title = 'HR Efficiency Map {Rate}'.format(Rate=self.Attributes['Rate'])
-        self.SaveCanvas()     
+        self.SaveCanvas()
+
 
     def UpdatePlot(self, chipNo, col, row, value):
         result = value

@@ -36,13 +36,8 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         summaryPlot.SetContour(len(levels),levels)
 
         self.ResultData['Plot']['Format'] = 'png'
-
-        if self.SavePlotFile:
-            self.Canvas.SaveAs(self.GetPlotFileName())
-            print 'Saved ', self.GetPlotFileName()
-        self.ResultData['Plot']['Enabled'] = 1
         self.Title = 'Bump Bonding Map'
-        self.ResultData['Plot']['ImageFile'] = self.GetPlotFileName()
+        self.SaveCanvas()
         
         # reset palette
         ROOT.gStyle.SetPalette(1)
