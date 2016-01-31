@@ -33,13 +33,13 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             DeadPixels += int(i['TestResultObject'].ResultData['SubTestResults']['Summary'].ResultData['KeyValueDictPairs']['nDeadPixel']['Value'])
             ThresholdDefects += int(i['TestResultObject'].ResultData['SubTestResults']['Summary'].ResultData['KeyValueDictPairs']['nThrDefect']['Value'])
             DeadBumps += int(i['TestResultObject'].ResultData['SubTestResults']['Summary'].ResultData['KeyValueDictPairs']['nDeadBumps']['Value'])
+            TotalDefects +=int(i['TestResultObject'].ResultData['SubTestResults']['Summary'].ResultData['KeyValueDictPairs']['Total']['Value'])
             if 'Purdue' not in self.ParentObject.ParentObject.Attributes['QualificationType']:
                 NoisyPixels += int(i['TestResultObject'].ResultData['SubTestResults']['Summary'].ResultData['KeyValueDictPairs']['nNoisy2Pixel']['Value'])
                 TrimProblems += int(i['TestResultObject'].ResultData['SubTestResults']['Summary'].ResultData['KeyValueDictPairs']['nDeadTrimbits']['Value'])
                 PHGainDefects += int(i['TestResultObject'].ResultData['SubTestResults']['Summary'].ResultData['KeyValueDictPairs']['nGainDefect']['Value'])
                 PHPedestalDefects += int(i['TestResultObject'].ResultData['SubTestResults']['Summary'].ResultData['KeyValueDictPairs']['nPedDefect']['Value'])
                 PHPar1Defects += int(i['TestResultObject'].ResultData['SubTestResults']['Summary'].ResultData['KeyValueDictPairs']['nPar1Defect']['Value'])
-                TotalDefects +=int(i['TestResultObject'].ResultData['SubTestResults']['Summary'].ResultData['KeyValueDictPairs']['Total']['Value'])
                 AddressProblems += int(i['TestResultObject'].ResultData['SubTestResults']['Summary'].ResultData['KeyValueDictPairs']['nAddressProblems']['Value'])
                 MaskDefects += int(i['TestResultObject'].ResultData['SubTestResults']['Summary'].ResultData['KeyValueDictPairs']['nMaskDefect']['Value'])
         
@@ -115,7 +115,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             },
             'PixelDefects': {
                 'Value':'%d - %d/%d/%d'%(TotalDefects,PixelDefectsRocsA,PixelDefectsRocsB,PixelDefectsRocsC),
-                'Label':'Special Defects - A/B/C',
+                'Label':'Pixel Defects - A/B/C',
                 'NumericValue':TotalDefects,
             },
             'MaskDefects':{
