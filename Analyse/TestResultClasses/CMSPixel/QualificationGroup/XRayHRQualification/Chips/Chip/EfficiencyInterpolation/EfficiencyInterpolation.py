@@ -30,7 +30,6 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         
     def PopulateResultData(self):
         ChipNo = self.ParentObject.Attributes['ChipNo']
-        
         Rates = self.ParentObject.ParentObject.ParentObject.Attributes['Rates']
         PixelArea = 150 * 100 * 1.e-8
         RealHitrateList = array.array('d', [0])
@@ -95,8 +94,13 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
             if self.ResultData['Plot']['ROOTObject']:
                 ROOT.gStyle.SetOptStat(0)
-
-                cubicFit = ROOT.TF1("fitfunction", self.FitFunction, 40, 150)
+                
+                if ChipNo == 14:
+                    cubicFit = ROOT.TF1("fitfunction", self.FitFunction, 40, 100)
+                elif ChipNo == 15:
+                    cubicFit = ROOT.TF1("fitfunction", self.FitFunction, 10, 60)
+                else:
+                    cubicFit = ROOT.TF1("fitfunction", self.FitFunction, 40, 150)
                 cubicFit.SetParameter(0, 100)
                 cubicFit.SetParLimits(0, 0, 101)
                 cubicFit.SetParameter(1, 5e-7)
@@ -128,28 +132,75 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                 self.ResultData['KeyValueDictPairs']['p1'] = {'Label':'p1', 'Value': '{0:1.2e}'.format(cubicFit.GetParameter(1))}
                 self.ResultData['KeyList'].append('p1')
 
+                if ChipNo == 14:
+                    for InterpolationRate in [50,80]:
+                        line = ROOT.TLine().DrawLine(
+                            InterpolationRate * 1e6 * ScalingFactor, PlotMinEfficiency,
+                            InterpolationRate * 1e6 * ScalingFactor, 100)
+                        line.SetLineWidth(2)
+                        line.SetLineStyle(2)
+                        line.SetLineColor(ROOT.kRed)
+
+                        self.ResultData['KeyValueDictPairs']['InterpolatedEfficiency%d'%int(InterpolationRate)]['Value'] = '{InterpolatedEfficiency:1.2f}'.format(InterpolatedEfficiency=InterpolationFunction.Eval(InterpolationRate * 1e6 * ScalingFactor))
+                        self.ResultData['KeyList'] += ['InterpolatedEfficiency%d'%int(InterpolationRate)]
+
+                        xpos = np.array([float(InterpolationRate * 1.0e6 * ScalingFactor)])
+                        err = np.array([0.]*len(xpos))
+                        try:
+                            FitResults.GetConfidenceIntervals(len(xpos), 1, 1, xpos, err, 0.683)
+                            InterpolatedEfficiencyError = err[0]
+                        except:
+                            InterpolatedEfficiencyError = 0
+                            pass
+                        self.ResultData['KeyValueDictPairs']['InterpolatedEfficiency%dError'%int(InterpolationRate)]['Value'] = '{InterpolatedEfficiencyError:1.3f}'.format(InterpolatedEfficiencyError=InterpolatedEfficiencyError)
+                        self.ResultData['KeyList'] += ['InterpolatedEfficiency%dError'%int(InterpolationRate)]
+
+                elif ChipNo == 15:
+                    for InterpolationRate in [20,50]:
+                        line = ROOT.TLine().DrawLine(
+                            InterpolationRate * 1e6 * ScalingFactor, PlotMinEfficiency,
+                            InterpolationRate * 1e6 * ScalingFactor, 100)
+                        line.SetLineWidth(2)
+                        line.SetLineStyle(2)
+                        line.SetLineColor(ROOT.kRed)
+
+                        self.ResultData['KeyValueDictPairs']['InterpolatedEfficiency%d'%int(InterpolationRate)]['Value'] = '{InterpolatedEfficiency:1.2f}'.format(InterpolatedEfficiency=InterpolationFunction.Eval(InterpolationRate * 1e6 * ScalingFactor))
+                        self.ResultData['KeyList'] += ['InterpolatedEfficiency%d'%int(InterpolationRate)]
+
+                        xpos = np.array([float(InterpolationRate * 1.0e6 * ScalingFactor)])
+                        err = np.array([0.]*len(xpos))
+                        try:
+                            FitResults.GetConfidenceIntervals(len(xpos), 1, 1, xpos, err, 0.683)
+                            InterpolatedEfficiencyError = err[0]
+                        except:
+                            InterpolatedEfficiencyError = 0
+                            pass
+                        self.ResultData['KeyValueDictPairs']['InterpolatedEfficiency%dError'%int(InterpolationRate)]['Value'] = '{InterpolatedEfficiencyError:1.3f}'.format(InterpolatedEfficiencyError=InterpolatedEfficiencyError)
+                        self.ResultData['KeyList'] += ['InterpolatedEfficiency%dError'%int(InterpolationRate)]
+
                 # values to show in summary
-                for InterpolationRate in self.ParentObject.ParentObject.ParentObject.Attributes['InterpolatedEfficiencyRates']:
-                    line = ROOT.TLine().DrawLine(
-                        InterpolationRate * 1e6 * ScalingFactor, PlotMinEfficiency,
-                        InterpolationRate * 1e6 * ScalingFactor, 100)
-                    line.SetLineWidth(2)
-                    line.SetLineStyle(2)
-                    line.SetLineColor(ROOT.kRed)
+                else:
+                    for InterpolationRate in self.ParentObject.ParentObject.ParentObject.Attributes['InterpolatedEfficiencyRates']:
+                        line = ROOT.TLine().DrawLine(
+                            InterpolationRate * 1e6 * ScalingFactor, PlotMinEfficiency,
+                            InterpolationRate * 1e6 * ScalingFactor, 100)
+                        line.SetLineWidth(2)
+                        line.SetLineStyle(2)
+                        line.SetLineColor(ROOT.kRed)
 
-                    self.ResultData['KeyValueDictPairs']['InterpolatedEfficiency%d'%int(InterpolationRate)]['Value'] = '{InterpolatedEfficiency:1.2f}'.format(InterpolatedEfficiency=InterpolationFunction.Eval(InterpolationRate * 1e6 * ScalingFactor))
-                    self.ResultData['KeyList'] += ['InterpolatedEfficiency%d'%int(InterpolationRate)]
+                        self.ResultData['KeyValueDictPairs']['InterpolatedEfficiency%d'%int(InterpolationRate)]['Value'] = '{InterpolatedEfficiency:1.2f}'.format(InterpolatedEfficiency=InterpolationFunction.Eval(InterpolationRate * 1e6 * ScalingFactor))
+                        self.ResultData['KeyList'] += ['InterpolatedEfficiency%d'%int(InterpolationRate)]
 
-                    xpos = np.array([float(InterpolationRate * 1.0e6 * ScalingFactor)])
-                    err = np.array([0.]*len(xpos))
-                    try:
-                        FitResults.GetConfidenceIntervals(len(xpos), 1, 1, xpos, err, 0.683)
-                        InterpolatedEfficiencyError = err[0]
-                    except:
-                        InterpolatedEfficiencyError = 0
-                        pass
-                    self.ResultData['KeyValueDictPairs']['InterpolatedEfficiency%dError'%int(InterpolationRate)]['Value'] = '{InterpolatedEfficiencyError:1.3f}'.format(InterpolatedEfficiencyError=InterpolatedEfficiencyError)
-                    self.ResultData['KeyList'] += ['InterpolatedEfficiency%dError'%int(InterpolationRate)]
+                        xpos = np.array([float(InterpolationRate * 1.0e6 * ScalingFactor)])
+                        err = np.array([0.]*len(xpos))
+                        try:
+                            FitResults.GetConfidenceIntervals(len(xpos), 1, 1, xpos, err, 0.683)
+                            InterpolatedEfficiencyError = err[0]
+                        except:
+                            InterpolatedEfficiencyError = 0
+                            pass
+                        self.ResultData['KeyValueDictPairs']['InterpolatedEfficiency%dError'%int(InterpolationRate)]['Value'] = '{InterpolatedEfficiencyError:1.3f}'.format(InterpolatedEfficiencyError=InterpolatedEfficiencyError)
+                        self.ResultData['KeyList'] += ['InterpolatedEfficiency%dError'%int(InterpolationRate)]
 
                 # always interpolate at this rates, but don't show them in summary
                 for InterpolationRate in HiddenDataInterpolationRates:
