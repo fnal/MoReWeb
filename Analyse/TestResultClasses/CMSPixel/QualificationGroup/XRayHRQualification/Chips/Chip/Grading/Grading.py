@@ -188,7 +188,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         RateIndex = 1
         
         if ChipNo == 14:
-            for Rate in [50,80]:
+            for Rate in [20,50,80]:
                 MeanEfficiency = float(self.ParentObject.ResultData['SubTestResults']['EfficiencyInterpolation'].ResultData['KeyValueDictPairs']['InterpolatedEfficiency{Rate}'.format(Rate=Rate)]['Value'])
                 Grades['EfficiencyGrade'] = 1
                 if MeanEfficiency < self.TestResultEnvironmentObject.GradingParameters['XRayHighRateEfficiency_max_allowed_loweff_A_Rate{RateIndex}'.format(RateIndex=RateIndex)]:

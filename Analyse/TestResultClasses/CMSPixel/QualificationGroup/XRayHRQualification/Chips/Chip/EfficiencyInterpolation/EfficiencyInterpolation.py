@@ -133,7 +133,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                 self.ResultData['KeyList'].append('p1')
 
                 if ChipNo == 14:
-                    for InterpolationRate in [50,80]:
+                    for InterpolationRate in [20,50,80]:
                         line = ROOT.TLine().DrawLine(
                             InterpolationRate * 1e6 * ScalingFactor, PlotMinEfficiency,
                             InterpolationRate * 1e6 * ScalingFactor, 100)
