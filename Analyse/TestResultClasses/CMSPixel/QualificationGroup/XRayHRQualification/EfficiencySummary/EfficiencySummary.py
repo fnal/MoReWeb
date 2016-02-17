@@ -28,7 +28,15 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                     Minimum = Efficiency
                 if Efficiency > Maximum:
                     Maximum = Efficiency
-             
+        print 'RocNumbers List :' + str(RocNumbers)
+        if str(self.Attributes['Rate']) == str(80):
+            RocNumbers.pop(0)
+        elif str(self.Attributes['Rate']) == str(120):
+            RocNumbers.pop(0)
+            RocNumbers.pop(0)
+        print 'RocNumbers List :' + str(RocNumbers)
+        print 'eff list :' + str(Efficiencies)
+        
         self.ResultData['Plot']['ROOTGraph'] = ROOT.TGraph(len(RocNumbers), RocNumbers, Efficiencies)
 
         try:
