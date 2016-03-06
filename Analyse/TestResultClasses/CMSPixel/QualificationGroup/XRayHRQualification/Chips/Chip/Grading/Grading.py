@@ -67,7 +67,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             'Value':'',
             'Label':'Efficiency Grade '+RateData['InterpolatedEfficiencyRates']['RatesString']
         }
-
+        
         self.ResultData['KeyValueDictPairs']['NumberOfHotPixels'] = {
             'Value':'',
             'Label':'# Hot Pixels '+RateData['HRData']['RatesString']
@@ -187,30 +187,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
         RateIndex = 1
         
-        if ChipNo == 14:
-            for Rate in [20,50,80]:
-                MeanEfficiency = float(self.ParentObject.ResultData['SubTestResults']['EfficiencyInterpolation'].ResultData['KeyValueDictPairs']['InterpolatedEfficiency{Rate}'.format(Rate=Rate)]['Value'])
-                Grades['EfficiencyGrade'] = 1
-                if MeanEfficiency < self.TestResultEnvironmentObject.GradingParameters['XRayHighRateEfficiency_max_allowed_loweff_A_Rate{RateIndex}'.format(RateIndex=RateIndex)]:
-                    Grades['EfficiencyGrade'] = 2
-                if MeanEfficiency < self.TestResultEnvironmentObject.GradingParameters['XRayHighRateEfficiency_max_allowed_loweff_B_Rate{RateIndex}'.format(RateIndex=RateIndex)]:
-                    Grades['EfficiencyGrade'] = 3
-
-                if not 'EfficiencyGrade' in OmitGradesInFinalGrading and not 'EfficiencyGrade_{Rate}'.format(Rate=Rate) in OmitGradesInFinalGrading:
-                    ROCGrades.append(Grades['EfficiencyGrade'])
-
-                RateIndex += 1
-
-                self.ResultData['HiddenData']['Efficiency_{Rate}'.format(Rate=Rate)] = MeanEfficiency
-                self.ResultData['KeyValueDictPairs']['Efficiency']['Value'] = (self.ResultData['KeyValueDictPairs']['Efficiency']['Value']+'/{Value}'.format(Value=MeanEfficiency)).strip('/')
-                
-                self.ResultData['HiddenData']['EfficiencyGrade_{Rate}'.format(Rate=Rate)] = Grades['EfficiencyGrade']
-
-                Grade = '{Grade}'.format(Grade=GradeMapping[Grades['EfficiencyGrade']])
-                if 'EfficiencyGrade' in OmitGradesInFinalGrading or 'EfficiencyGrade_{Rate}'.format(Rate=Rate) in OmitGradesInFinalGrading:
-                    Grade = '('+Grade+')'
-                self.ResultData['KeyValueDictPairs']['EfficiencyGrade']['Value'] = (self.ResultData['KeyValueDictPairs']['EfficiencyGrade']['Value']+'/'+Grade).strip('/')
-        elif ChipNo == 15:
+        if ChipNo == 14 or ChipNo == 15:
             for Rate in [20,50]:
                 MeanEfficiency = float(self.ParentObject.ResultData['SubTestResults']['EfficiencyInterpolation'].ResultData['KeyValueDictPairs']['InterpolatedEfficiency{Rate}'.format(Rate=Rate)]['Value'])
                 Grades['EfficiencyGrade'] = 1
