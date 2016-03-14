@@ -266,7 +266,6 @@ class TestResult(GeneralTestResult):
         self.Attributes['InterpolatedEfficiencyRates'] = []
         for r in range(1, int(1 + self.TestResultEnvironmentObject.GradingParameters['XRayHighRateEfficiency_NInterpolationRates'])):
             self.Attributes['InterpolatedEfficiencyRates'].append(int(self.TestResultEnvironmentObject.GradingParameters['XRayHighRateEfficiency_InterpolationRate%d'%r]))
-
         self.Attributes['ROOTFiles'] = {}
         self.Attributes['SCurvePaths'] = {}
         self.Attributes['Ntrig'] = {}

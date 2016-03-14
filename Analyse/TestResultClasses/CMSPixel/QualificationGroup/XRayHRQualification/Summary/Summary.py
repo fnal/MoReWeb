@@ -74,8 +74,8 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             for i in self.ParentObject.ResultData['SubTestResults']['Chips'].ResultData['SubTestResults']:
                 ChipTestResultObject = self.ParentObject.ResultData['SubTestResults']['Chips'].ResultData['SubTestResults'][i]
                 Efficiency = ChipTestResultObject.ResultData['SubTestResults']['Grading'].ResultData['HiddenData']['Efficiency_{Rate}'.format(Rate=Rate)]
-                EfficiencyList.append(Efficiency)
-
+                if len(str(Efficiency)) < 6:
+                    EfficiencyList.append(Efficiency)
             MeanEfficiency = sum(EfficiencyList) / float(len(EfficiencyList))
             EfficienciesString = (EfficienciesString + "/{Eff:1.2f}".format(Eff=MeanEfficiency)).strip("/")
 

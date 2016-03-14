@@ -22,12 +22,16 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             Efficiency = ChipTestResultObject.ResultData['SubTestResults']['Grading'].ResultData['HiddenData']['Efficiency_{Rate}'.format(Rate=self.Attributes['Rate'])]
             ChipNo = ChipTestResultObject.Attributes['ChipNo']
             RocNumbers.append(ChipNo)
-            Efficiencies.append(Efficiency)
-            if Efficiency < Minimum:
-                Minimum = Efficiency
-            if Efficiency > Maximum:
-                Maximum = Efficiency
-             
+            if len(str(Efficiency)) < 6:
+                Efficiencies.append(Efficiency)
+                if Efficiency < Minimum:
+                    Minimum = Efficiency
+                if Efficiency > Maximum:
+                    Maximum = Efficiency
+        if str(self.Attributes['Rate']) == str(80):
+            RocNumbers.pop(0)
+            RocNumbers.pop(0)
+        
         self.ResultData['Plot']['ROOTGraph'] = ROOT.TGraph(len(RocNumbers), RocNumbers, Efficiencies)
 
         try:

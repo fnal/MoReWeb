@@ -26,7 +26,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         self.ResultData['HiddenData']['TotalList'] = set()
         self.isDigitalROC = self.ParentObject.ParentObject.ParentObject.Attributes['isDigital']
 
-    def GetSingleChipSubtestGrade(self, SpecialPopulateDataParameters, CurrentGrade, IncludeDefects = False):
+    def GetSingleChipSubtestGrade(self, SpecialPopulateDataParameters, CurrentGrade, IncludeDefects = True):
         Value = float(self.ParentObject.ResultData['SubTestResults'][SpecialPopulateDataParameters['DataKey']].ResultData['KeyValueDictPairs'][SpecialPopulateDataParameters['DataParameterKey']]['Value'])
 
         nDefects = 0
@@ -41,11 +41,11 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         Value = float(Value)
         ChipGrade = CurrentGrade
 
-        # roc value based grading
-        #if ChipGrade == 1 and Value > SpecialPopulateDataParameters['YLimitB']:
-        #    ChipGrade = 2
-        #if Value > SpecialPopulateDataParameters['YLimitC']:
-        #    ChipGrade = 3
+        #roc value based grading
+        if ChipGrade == 1 and Value > SpecialPopulateDataParameters['YLimitB']:
+            ChipGrade = 2
+        if Value > SpecialPopulateDataParameters['YLimitC']:
+            ChipGrade = 3
 
         if IncludeDefects:
             # number of pixel defects based grading
@@ -150,9 +150,13 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             self.ResultData['HiddenData']['AddressProblemList'] |
             self.ResultData['HiddenData']['DeadBumpList'] |
             self.ResultData['HiddenData']['DeadPixelList'] |
-            self.ResultData['HiddenData']['MaskDefectList']|
             self.ResultData['HiddenData']['ThrDefectList']|
-            self.ResultData['HiddenData']['DeadTrimbitsList']
+            self.ResultData['HiddenData']['DeadTrimbitsList'] |
+            self.ResultData['HiddenData']['GainDefectList'] |
+            self.ResultData['HiddenData']['IneffPixelList'] |
+            self.ResultData['HiddenData']['MaskDefectList'] |
+            self.ResultData['HiddenData']['NoiseDefectList'] |
+            self.ResultData['HiddenData']['Par1DefectList']
         )
 
         # total defects grading
