@@ -102,6 +102,8 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         try:
             if len(self.ResultData['SubTestResultDictList']) > 0:
                 TestCenter = self.ResultData['SubTestResultDictList'][0]['InitialAttributes']['TestCenter']
+            else:
+                TestCenter = ''
         except:
             TestCenter = ''
 
