@@ -6,7 +6,7 @@ import ROOT
 class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
     def CustomInit(self):
         self.Name='CMSPixel_QualificationGroup_Fulltest_Chips_Chip_VcalThresholdUntrimmed_TestResult'
-        self.NameSingle='VcalThresholdUntrimmed'
+        self.NameSingle='VcalThresholdTrimmed'
         self.Attributes['TestedObjectType'] = 'CMSPixel_QualificationGroup_Fulltest_ROC'
 
 
@@ -50,7 +50,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
 
 
-        self.ResultData['Plot']['Caption'] = 'Vcal Threshold Untrimmed'
+        self.ResultData['Plot']['Caption'] = 'Vcal Threshold Trimmed'
         if self.Canvas:
             self.Canvas.SetCanvasSize(500, 500)
         self.ResultData['Plot']['Format'] = 'png'
