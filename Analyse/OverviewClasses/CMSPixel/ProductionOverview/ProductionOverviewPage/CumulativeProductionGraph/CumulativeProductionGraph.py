@@ -111,8 +111,8 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
                         hB.Fill(relativeTestDate)
                     elif Module['Grade'] == 'C':
                         hC.Fill(relativeTestDate)
-                    else:
-                        hN.Fill(relativeTestDate)
+                    #else:
+                    #    hN.Fill(relativeTestDate)
                 except:
                     print "could not fill in module: ", Module['ModuleID']
 

@@ -26,7 +26,7 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
         NumModules = len(ModuleIDsList)
         NumModulesMaxPerList = 50
 
-        TestsList = ['m20_1', 'm20_2', 'p17_1']
+        TestsList = ['m20_1', 'p17_1']
         ReadbackParameters = [
             {
                 'Parameter': 'par0vd',
@@ -187,6 +187,7 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
                     "Key": "BumpBondingOverlay_{Grade}".format(Grade = Grade),
                     "Module": "BumpBondingOverlay",
                     "InitialAttributes" : {
+                        "Test": "m20_1",
                         "Grade": "{Grade}".format(Grade = Grade),
                         "StorageKey" : "BumpBondingOverlay_{Grade}".format(Grade = Grade),
                         "DateBegin": self.Attributes['DateBegin'],
@@ -213,7 +214,7 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
                     "Key": "DeadPixelOverlay_{Grade}".format(Grade = Grade),
                     "Module": "DeadPixelOverlay",
                     "InitialAttributes" : {
-                        "Test": "m20_2",
+                        "Test": "m20_1",
                         "Grade": "{Grade}".format(Grade = Grade),
                         "StorageKey" : "DeadPixelOverlay_{Grade}".format(Grade = Grade),
                         "DateBegin": self.Attributes['DateBegin'],
@@ -230,7 +231,7 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
                     "Key": "GainOverlay_{Grade}".format(Grade = Grade),
                     "Module": "GainOverlay",
                     "InitialAttributes" : {
-                        "Test": "m20_2",
+                        "Test": "m20_1",
                         "Grade": "{Grade}".format(Grade = Grade),
                         "StorageKey" : "GainOverlay_{Grade}".format(Grade = Grade),
                         "DateBegin": self.Attributes['DateBegin'],
@@ -476,28 +477,28 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
             )
 
         ### Readback ###
-        self.SubPages.append({"InitialAttributes" : {"Anchor": "Readback", "Title": "Readback"}, "Key": "Section","Module": "Section"})
-        for Test in TestsList:
-            for Parameter in ReadbackParameters:
-                self.SubPages.append(
-                    {
-                        "Key": "ReadbackParameter_{Test}_{Parameter}".format(Test = Test, Parameter = Parameter['Parameter']),
-                        "Module": "ReadbackParameter",
-                        "InitialAttributes" : {
-                            "Test": Test,
-                            "Parameter": Parameter['Parameter'],
-                            "Xmin": Parameter['Xmin'],
-                            "Xmax": Parameter['Xmax'],
-                            "StorageKey" : "ReadbackParameter_{Test}_{Parameter}".format(Test = Test, Parameter = Parameter['Parameter']),
-                            "DateBegin": self.Attributes['DateBegin'],
-                            "DateEnd": self.Attributes['DateEnd'],
-                        }
-                    }
-                )
+        #self.SubPages.append({"InitialAttributes" : {"Anchor": "Readback", "Title": "Readback"}, "Key": "Section","Module": "Section"})
+        #for Test in TestsList:
+        #    for Parameter in ReadbackParameters:
+        #        self.SubPages.append(
+        #            {
+        #                "Key": "ReadbackParameter_{Test}_{Parameter}".format(Test = Test, Parameter = Parameter['Parameter']),
+        #                "Module": "ReadbackParameter",
+        #                "InitialAttributes" : {
+        #                    "Test": Test,
+        #                    "Parameter": Parameter['Parameter'],
+        #                    "Xmin": Parameter['Xmin'],
+        #                    "Xmax": Parameter['Xmax'],
+        #                    "StorageKey" : "ReadbackParameter_{Test}_{Parameter}".format(Test = Test, Parameter = Parameter['Parameter']),
+        #                    "DateBegin": self.Attributes['DateBegin'],
+        #                    "DateEnd": self.Attributes['DateEnd'],
+        #                }
+        #            }
+        #        )
 
         ### HR ###
         self.SubPages.append({"InitialAttributes" : {"Anchor": "HighRate", "Title": "HighRateTests"}, "Key": "Section","Module": "Section"})
-        for Rate in [50, 120]:
+        for Rate in [20,50,80]:
             self.SubPages.append(
                 {
                     "Key": "Efficiency_{Rate}".format(Rate = Rate),
@@ -510,42 +511,42 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
                     }
                 }
             )
-        self.SubPages.append(
-            {
-                "Key": "XrayNoisePerPixel",
-                "Module": "XrayNoisePerPixel",
-                "InitialAttributes" : {
-                    "StorageKey" : "XrayNoisePerPixel",
-                    "DateBegin": self.Attributes['DateBegin'],
-                    "DateEnd": self.Attributes['DateEnd'],
-                }
-            }
-        )
+        #self.SubPages.append(
+        #    {
+        #        "Key": "XrayNoisePerPixel",
+        #        "Module": "XrayNoisePerPixel",
+        #        "InitialAttributes" : {
+        #            "StorageKey" : "XrayNoisePerPixel",
+        #            "DateBegin": self.Attributes['DateBegin'],
+        #            "DateEnd": self.Attributes['DateEnd'],
+        #        }
+        #    }
+        #)
 
         ### Vcal Calibration ###
-        self.SubPages.append({"InitialAttributes" : {"Anchor": "VcalCalibration", "Title": "Vcal Calibration"}, "Key": "Section","Module": "Section"})
-        self.SubPages.append(
-            {
-                "Key": "VcalSlope",
-                "Module": "VcalSlope",
-                "InitialAttributes" : {
-                    "StorageKey" : "VcalSlope_Spectrum",
-                    "DateBegin": self.Attributes['DateBegin'],
-                    "DateEnd": self.Attributes['DateEnd'],
-                }
-            }
-        )
-        self.SubPages.append(
-            {
-                "Key": "VcalOffset",
-                "Module": "VcalOffset",
-                "InitialAttributes" : {
-                    "StorageKey" : "VcalOffset_Spectrum",
-                    "DateBegin": self.Attributes['DateBegin'],
-                    "DateEnd": self.Attributes['DateEnd'],
-                }
-            }
-        )
+        #self.SubPages.append({"InitialAttributes" : {"Anchor": "VcalCalibration", "Title": "Vcal Calibration"}, "Key": "Section","Module": "Section"})
+        #self.SubPages.append(
+        #    {
+        #        "Key": "VcalSlope",
+        #        "Module": "VcalSlope",
+        #        "InitialAttributes" : {
+        #            "StorageKey" : "VcalSlope_Spectrum",
+        #            "DateBegin": self.Attributes['DateBegin'],
+        #            "DateEnd": self.Attributes['DateEnd'],
+        #        }
+        #    }
+        #)
+        #self.SubPages.append(
+        #    {
+        #        "Key": "VcalOffset",
+        #        "Module": "VcalOffset",
+        #        "InitialAttributes" : {
+        #            "StorageKey" : "VcalOffset_Spectrum",
+        #            "DateBegin": self.Attributes['DateBegin'],
+        #            "DateEnd": self.Attributes['DateEnd'],
+        #        }
+        #    }
+        #)
 
     def GenerateOverview(self):
         AbstractClasses.GeneralProductionOverview.GeneralProductionOverview.GenerateOverview(self)

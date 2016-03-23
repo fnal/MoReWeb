@@ -43,7 +43,7 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
                             if ROOTObject:
                                 for col in range(0, self.nCols):
                                     for row in range(0, self.nRows):
-                                        if ROOTObject.GetBinContent(1+col, 1+row) < 1 or ROOTObject.GetBinContent(1+col, 1+row) > 4.5:
+                                        if (ROOTObject.GetBinContent(1+col, 1+row) < 1 and ROOTObject.GetBinContent(1+col, 1+row) > 0) or ROOTObject.GetBinContent(1+col, 1+row) > 4.5:
                                             self.UpdatePlot(SummaryMap, Chip, col, row, 1)
                                 ROOTObject.Delete()
                             else:

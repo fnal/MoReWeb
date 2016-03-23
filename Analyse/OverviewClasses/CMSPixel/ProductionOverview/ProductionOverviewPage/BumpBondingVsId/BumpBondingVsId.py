@@ -53,18 +53,18 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
                 TestType = RowTuple['TestType']
                 binX = 1 + ModuleIDsList.index(ModuleID)
 
-                if TestType == 'XRayHRQualification':
-                    NumberOfPixelDefects = []
-                    for Chip in range(0,16):
-                        try:
-                            NumberOfPixelDefectsROC = int(self.GetJSONValue([RowTuple['RelativeModuleFinalResultsPath'], RowTuple['FulltestSubfolder'], 'Chips', 'Chip%d'%Chip, 'BumpBondingDefects_150', 'KeyValueDictPairs.json', 'NumberOfDefectivePixels', 'Value']))
-                        except:
-                            self.ProblematicModulesList.append(ModuleID)
-                            NumberOfPixelDefectsROC = 0
-                        NumberOfPixelDefects.append(NumberOfPixelDefectsROC)
-                    HistogramXray.SetBinContent(binX, sum(NumberOfPixelDefects))
+                #if TestType == 'XRayHRQualification':
+                #    NumberOfPixelDefects = []
+                #    for Chip in range(0,16):
+                #        try:
+                #            NumberOfPixelDefectsROC = int(self.GetJSONValue([RowTuple['RelativeModuleFinalResultsPath'], RowTuple['FulltestSubfolder'], 'Chips', 'Chip%d'%Chip, 'BumpBondingDefects_150', 'KeyValueDictPairs.json', 'NumberOfDefectivePixels', 'Value']))
+                #        except:
+                #            self.ProblematicModulesList.append(ModuleID)
+                #            NumberOfPixelDefectsROC = 0
+                #        NumberOfPixelDefects.append(NumberOfPixelDefectsROC)
+                #    HistogramXray.SetBinContent(binX, sum(NumberOfPixelDefects))
 
-                if TestType == 'p17_1':
+                if TestType == 'm20_1':
                     try:
                         NumberOfPixelDefects = int(self.GetJSONValue([RowTuple['RelativeModuleFinalResultsPath'], RowTuple['FulltestSubfolder'], 'Summary1', 'KeyValueDictPairs.json', 'DeadBumps', 'Value']))
                     except:
@@ -85,7 +85,7 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
             MaxXray = HistogramXray.GetBinContent(HistogramXray.GetMaximumBin())
             MaxColdbox = HistogramColdbox.GetBinContent(HistogramColdbox.GetMaximumBin())
             HistogramXray.SetMaximum(max(MaxXray, MaxColdbox)*1.05)
-            HistogramXray.SetLineColor(ROOT.kBlue + 2)
+            #HistogramXray.SetLineColor(ROOT.kBlue + 2)
             HistogramColdbox.SetLineColor(ROOT.kRed + 2)
             HistogramXray.Draw("HIST")
             HistogramColdbox.Draw("*PE SAME")
@@ -103,15 +103,15 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
             title2.SetNDC()
             title2.SetTextAlign(12)
             title2.SetTextColor(ROOT.kRed + 2)
-            Subtitle2 = "ColdBox+17"
+            Subtitle2 = "ColdBox -20"
             title2.DrawText(0.9, 0.965, Subtitle2)
 
-            title2 = ROOT.TText()
-            title2.SetNDC()
-            title2.SetTextAlign(12)
-            title2.SetTextColor(ROOT.kBlue + 2)
-            Subtitle2 = "Xray"
-            title2.DrawText(0.85, 0.965, Subtitle2)
+            #title2 = ROOT.TText()
+            #title2.SetNDC()
+            #title2.SetTextAlign(12)
+            #title2.SetTextColor(ROOT.kBlue + 2)
+            #Subtitle2 = "Xray"
+            #title2.DrawText(0.85, 0.965, Subtitle2)
 
         self.SaveCanvas()
         HTML = self.Image(self.Attributes['ImageFile'], {'height': '300px'})

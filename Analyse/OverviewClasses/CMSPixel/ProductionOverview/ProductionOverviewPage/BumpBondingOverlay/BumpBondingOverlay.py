@@ -31,23 +31,27 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
 
         HTML = ""
 
-        nCols = 8 * 52+1
-        nRows = 2 * 80+1
+        nCols = 8 * 52+1 - 1
+        nRows = 2 * 80+1 - 1
         SummaryMap = ROOT.TH2D(self.GetUniqueID(), "", nCols, 0, nCols, nRows, 0, nRows)
 
-        SubtestSubfolder = "BumpBondingProblems_150"
+        SubtestSubfolder = "BumpBondingMap"
 
         NModules = 0
         for ModuleID in ModuleIDsList:
-
             for RowTuple in Rows:
                 if RowTuple['ModuleID'] == ModuleID:
                     TestType = RowTuple['TestType']
-                    if TestType == 'XRayHRQualification' and (RowTuple['Grade'] == self.Attributes['Grade'] or self.Attributes['Grade'] == 'All'):
+                    if TestType == 'm20_1' and (RowTuple['Grade'] == self.Attributes['Grade'] or self.Attributes['Grade'] == 'All'):
                         Path = '/'.join([self.GlobalOverviewPath, RowTuple['RelativeModuleFinalResultsPath'], RowTuple['FulltestSubfolder'], SubtestSubfolder, '*.root'])
                         RootFiles = glob.glob(Path)
-
                         ROOTObject = self.GetHistFromROOTFile(RootFiles, "BumpBonding")
+                        for i in range (0,nCols):
+                            for j in range (0,nRows):
+                                if ROOTObject.GetBinContent(i,j) > 5.0:
+                                    ROOTObject.SetBinContent(i,j,1)
+                                else:
+                                    ROOTObject.SetBinContent(i,j,0)
                         if ROOTObject:
                             SummaryMap.Add(ROOTObject)
                             NModules += 1
@@ -55,9 +59,9 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
                             self.ProblematicModulesList.append(ModuleID)
                             if self.Verbose:
                                 print "warning: BumpBonding map not found for module: '%s'"%ModuleID
-        
+    
         SummaryMap.Draw("colz")
-
+        SummaryMap.SetMinimum(0)
         title = ROOT.TText()
         title.SetNDC()
         title.SetTextAlign(12)

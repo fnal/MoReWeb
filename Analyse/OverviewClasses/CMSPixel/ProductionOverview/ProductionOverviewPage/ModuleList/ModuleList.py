@@ -25,8 +25,7 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
 
         TableData.append(    
             [
-                {'Class' : 'Header', 'Value' : 'Module'}, {'Class' : 'Header', 'Value' : 'Testing complete'}, {'Class' : 'Header', 'Value' : 'Grade'}, {'Class' : 'Header', 'Value' : 'LeakageCurrentPON'}, {'Class' : 'Header', 'Value' : 'FullTest@-20 BTC'}, {'Class' : 'Header', 'Value' : 'FullTest@-20 ATC'}, {'Class' : 'Header', 'Value' : 'FullTest@17'}, {'Class' : 'Header', 'Value' : 'X-ray Calibration'}, {'Class' : 'Header', 'Value' : 'X-ray HighRate'}
-            ]
+                {'Class' : 'Header', 'Value' : 'Module'}, {'Class' : 'Header', 'Value' : 'Testing complete'}, {'Class' : 'Header', 'Value' : 'Grade'}, {'Class' : 'Header', 'Value' : 'FullTest@-20 BTC'}, {'Class' : 'Header', 'Value' : 'FullTest@17'}       ]
         )
 
         for ModuleID in ModuleIDsList:
@@ -69,12 +68,12 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
                 Complete = '<div style="text-align:center;" title="FullQualification, HR Test and Calibration done">&#x2713;</div>'
                 FinalGrade = self.GetFinalGrade(ModuleID, Rows)
 
-
-            TableData.append(
-                [
-                    ModuleID, Complete, FinalGrade, LCTest, FTMinus20BTC, FTMinus20ATC, FT17, XrayCal, XrayHR
-                ]
-            )
+            if self.ModuleQualificationIsComplete(ModuleID, Rows):
+                TableData.append(
+                    [
+                        ModuleID, Complete, FinalGrade, FTMinus20BTC, FT17
+                    ]
+                )
 
         RowLimit = 9
         HTML = self.Table(TableData, RowLimit)
