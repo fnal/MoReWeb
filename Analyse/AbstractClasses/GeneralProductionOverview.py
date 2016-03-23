@@ -56,7 +56,7 @@ class GeneralProductionOverview:
         self.Canvas.cd()
         self.ParentObject = ParentObject
         self.ProblematicModulesList = []
-        self.FullQualificationFullTests = ['m20_1', 'm20_2', 'p17_1']
+        self.FullQualificationFullTests = ['m20_1', 'p17_1']
         ### custom init
         self.CustomInit()
 
@@ -224,7 +224,7 @@ class GeneralProductionOverview:
             Rows = self.GetModuleQualificationRows(ModuleID)
         if self.ModuleQualificationIsComplete(ModuleID, Rows):
             ModuleGrades = []
-            GradedTestTypes = ['m20_1', 'm20_2', 'p17_1', 'XrayCalibration_Spectrum', 'XRayHRQualification']
+            GradedTestTypes = ['m20_1']
             for RowTuple in Rows:
                 if RowTuple['ModuleID']==ModuleID:
                     if RowTuple['TestType'] in GradedTestTypes:
@@ -503,15 +503,23 @@ class GeneralProductionOverview:
         HistogramFound = False
         for RootFileName in RootFileNames:
             RootFile = ROOT.TFile.Open(RootFileName)
-            RootFileCanvas = RootFile.Get("c1")
+            if HistName == "BumpBonding":
+                RootFileCanvas = RootFile.Get("rescaledThr_Summary0_Merged")
+            else:
+                RootFileCanvas = RootFile.Get("c1")
             PrimitivesList = RootFileCanvas.GetListOfPrimitives()
-
             ClonedROOTObject = None
             for i in range(0, PrimitivesList.GetSize()):
-                if PrimitivesList.At(i).GetName().find(HistName) > -1:
-                    ClonedROOTObject = PrimitivesList.At(i).Clone(self.GetUniqueID())
-                    HistogramFound = True
-                    break
+                if HistName == "BumpBonding":
+                    if PrimitivesList.At(i).GetName() == "rescaledThr_Summary0_Merged":
+                        ClonedROOTObject = PrimitivesList.At(i).Clone(self.GetUniqueID())
+                        HistogramFound = True
+                        break
+                else:
+                    if PrimitivesList.At(i).GetName().find(HistName) > -1:
+                        ClonedROOTObject = PrimitivesList.At(i).Clone(self.GetUniqueID())
+                        HistogramFound = True
+                        break
 
             if HistogramFound:
                 self.FileHandles.append(RootFile)
