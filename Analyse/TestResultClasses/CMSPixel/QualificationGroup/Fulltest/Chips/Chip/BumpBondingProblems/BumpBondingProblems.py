@@ -57,11 +57,12 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                     self.TestResultEnvironmentObject.GradingParameters['maxThrDiff'])
             else:
                 # self.ResultData['Plot']['ROOTObject'].GetZaxis().SetRangeUser(0,255)
-                minZ = self.ParentObject.ResultData['SubTestResults']['BumpBonding'].ResultData['Plot'][
-                    'ROOTObject'].FindFirstBinAbove(.9)
-                minZ = self.ParentObject.ResultData['SubTestResults']['BumpBonding'].ResultData['Plot'][
-                    'ROOTObject'].GetXaxis().GetBinLowEdge(minZ)
-                self.ResultData['Plot']['ROOTObject'].GetZaxis().SetRangeUser(minZ, threshold)
+                #minZ = self.ParentObject.ResultData['SubTestResults']['BumpBonding'].ResultData['Plot'][
+                #    'ROOTObject'].FindFirstBinAbove(.9)
+                #minZ = self.ParentObject.ResultData['SubTestResults']['BumpBonding'].ResultData['Plot'][
+                #    'ROOTObject'].GetXaxis().GetBinLowEdge(minZ)
+                #self.ResultData['Plot']['ROOTObject'].GetZaxis().SetRangeUser(minZ, threshold)
+                self.ResultData['Plot']['ROOTObject'].GetZaxis().SetRangeUser(-5, 5)
             self.ResultData['Plot']['ROOTObject'].GetXaxis().SetTitle("Column No.")
             self.ResultData['Plot']['ROOTObject'].GetYaxis().SetTitle("Row No.")
             self.ResultData['Plot']['ROOTObject'].GetXaxis().CenterTitle()
