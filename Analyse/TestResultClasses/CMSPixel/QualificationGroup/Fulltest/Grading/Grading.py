@@ -99,10 +99,11 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                 IVGrade = 3
 
             # slope
-            #    grading is only done with the measured value at +17
-            if self.ParentObject.Attributes['TestType'].startswith('p17_'):
-                if IVGrade == 1 and CurrentVariation > self.TestResultEnvironmentObject.GradingParameters['slopeivB']:
-                    IVGrade = 3
+            #    grading is done with the measured value at +17 and -20
+            if IVGrade == 1 and CurrentVariation > self.TestResultEnvironmentObject.GradingParameters['slopeivB']:
+                IVGrade = 2
+            if CurrentVariation > self.TestResultEnvironmentObject.GradingParameters['slopeivC']:
+                IVGrade = 3
 
             # ratio +17/-20
             #    grade on ratio of measured current I(+17C)/I(-20C)
