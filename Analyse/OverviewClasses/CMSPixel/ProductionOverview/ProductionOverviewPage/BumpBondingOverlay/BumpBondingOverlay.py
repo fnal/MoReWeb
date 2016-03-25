@@ -46,6 +46,8 @@ class ProductionOverview(AbstractClasses.GeneralProductionOverview.GeneralProduc
                         Path = '/'.join([self.GlobalOverviewPath, RowTuple['RelativeModuleFinalResultsPath'], RowTuple['FulltestSubfolder'], SubtestSubfolder, '*.root'])
                         RootFiles = glob.glob(Path)
                         ROOTObject = self.GetHistFromROOTFile(RootFiles, "BumpBonding")
+                        if str(ROOTObject) == 'None':
+                            break
                         for i in range (0,nCols):
                             for j in range (0,nRows):
                                 if ROOTObject.GetBinContent(i,j) > 5.0:

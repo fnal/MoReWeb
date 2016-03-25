@@ -505,6 +505,9 @@ class GeneralProductionOverview:
             RootFile = ROOT.TFile.Open(RootFileName)
             if HistName == "BumpBonding":
                 RootFileCanvas = RootFile.Get("rescaledThr_Summary0_Merged")
+                if "rescaledThr_Summary0_Merged" not in str(RootFileCanvas):
+                    HistogramFound = False
+                    break
             else:
                 RootFileCanvas = RootFile.Get("c1")
             PrimitivesList = RootFileCanvas.GetListOfPrimitives()
