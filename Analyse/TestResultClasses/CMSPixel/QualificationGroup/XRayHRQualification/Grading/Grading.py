@@ -75,12 +75,12 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                 PixelDefectsROC = i['TestResultObject'].ResultData['SubTestResults']['Grading'].ResultData['HiddenData']['PixelDefects']['Value']
 
                 PixelDefects += PixelDefectsROC
-                if PixelDefectsROC > 166:
-                    ROCsMoreThanFourPercent += 1
-                elif PixelDefectsROC > 41:
-                    ROCsMoreThanOnePercent += 1
-                else:
-                    ROCsLessThanOnePercent += 1
+                #if PixelDefectsROC > 166:
+                #    ROCsMoreThanFourPercent += 1
+                #elif PixelDefectsROC > 41:
+                #    ROCsMoreThanOnePercent += 1
+                #else:
+                #    ROCsLessThanOnePercent += 1
 
                 # count number of pixel defects per module
                 BumpBondingDefects += BumpBondingDefectsROC
