@@ -282,10 +282,10 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             BumpBondingDefects = int(self.ParentObject.ResultData['SubTestResults']['BumpBondingDefects_{Rate}'.format(Rate=Rate)].ResultData['KeyValueDictPairs']['NumberOfDefectivePixels']['Value'])
 
             Grades['HitMapGrade'] = 1
-            if BumpBondingDefects >= self.TestResultEnvironmentObject.GradingParameters['XRayHighRate_missing_xray_pixels_B']:
-                Grades['HitMapGrade'] = 2
-            if BumpBondingDefects >= self.TestResultEnvironmentObject.GradingParameters['XRayHighRate_missing_xray_pixels_C']:
-                Grades['HitMapGrade'] = 3
+            #if BumpBondingDefects >= self.TestResultEnvironmentObject.GradingParameters['XRayHighRate_missing_xray_pixels_B']:
+            #    Grades['HitMapGrade'] = 2
+            #if BumpBondingDefects >= self.TestResultEnvironmentObject.GradingParameters['XRayHighRate_missing_xray_pixels_C']:
+            #    Grades['HitMapGrade'] = 3
 
             if not 'HitMapGrade' in OmitGradesInFinalGrading and not 'HitMapGrade_{Rate}'.format(Rate=Rate) in OmitGradesInFinalGrading:
                 ROCGrades.append(Grades['HitMapGrade'])
@@ -482,12 +482,12 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
         ### total pixel defects grading ###
         Grades['PixelDefectsGrade'] = 1
-        if TotalPixelDefects >= self.TestResultEnvironmentObject.GradingParameters['XRayHighRate_pixel_defects_B']:
-            Grades['PixelDefectsGrade'] = 2
-        if TotalPixelDefects >= self.TestResultEnvironmentObject.GradingParameters['XRayHighRate_pixel_defects_C']:
-            Grades['PixelDefectsGrade'] = 3
-        if not 'PixelDefectsGrade' in OmitGradesInFinalGrading:   
-            ROCGrades.append(Grades['PixelDefectsGrade'])
+        #if TotalPixelDefects >= self.TestResultEnvironmentObject.GradingParameters['XRayHighRate_pixel_defects_B']:
+        #    Grades['PixelDefectsGrade'] = 2
+        #if TotalPixelDefects >= self.TestResultEnvironmentObject.GradingParameters['XRayHighRate_pixel_defects_C']:
+        #    Grades['PixelDefectsGrade'] = 3
+        #if not 'PixelDefectsGrade' in OmitGradesInFinalGrading:
+        #    ROCGrades.append(Grades['PixelDefectsGrade'])
 
         ### Final ROC Grade ###
         self.ResultData['KeyValueDictPairs']['ROCGrade']['Value'] = GradeMapping[max(ROCGrades)]
