@@ -41,7 +41,84 @@ class TestResult(GeneralTestResult):
             print 'Analysing Fulltest with the following Attributes:'
             for name, value in self.Attributes.items():
                 print "\t%25s:  %s" % (name, value)
-        if 'Purdue' in self.ParentObject.Attributes['QualificationType']:
+        if 'Quicktest' in self.ParentObject.Attributes['QualificationType']:
+            #Parsing Quicktest for mounting
+            self.ResultData['SubTestResultDictList'] = [
+                    {
+                    'Key': 'ConfigFiles',
+                    'DisplayOptions': {
+                        'Show': False,
+                    }
+                },
+                {
+                    'Key': 'GradingParameters',
+                    'DisplayOptions': {
+                        'Order': 110,
+                        'Width': 1
+                    }
+                },
+                {  'Key': 'Chips',
+                   'DisplayOptions': {
+                       'GroupWithNext': False,
+                       'Order': 1,
+                   },
+                   'InitialAttributes': {
+                       'ModuleVersion': self.Attributes['ModuleVersion'],
+                   },
+                },
+                {
+                    'Key': 'PixelAliveMap',
+                    'DisplayOptions': {
+                        'Width': 4,
+                        'Order': 3,
+                    }
+                }
+            ]
+            
+            if not self.Attributes['isDigital']:
+                self.ResultData['SubTestResultDictList'].append({
+                    'Key': 'AddressLevelOverview',
+                    'DisplayOptions': {
+                        'Order': 2,
+                    }
+                })
+            else:
+                self.ResultData['SubTestResultDictList'].append(
+                    {
+                        'Key': 'Dummy0',
+                        'Module': 'Dummy',
+                        'DisplayOptions': {
+                            'Order': 2,
+                        }
+                    },
+                )
+            
+            self.ResultData['SubTestResultDictList'] += [
+                     {
+                    'Key': 'Grading',
+                    'DisplayOptions': {
+                        'Show': False,
+                    }
+                },
+                {
+                    'Key': 'Summary1',
+                    'DisplayOptions': {
+                        'Order': 4,
+                    }
+                },
+                {
+                    'Key': 'Logfile',
+                    'DisplayOptions': {
+                        'Width': 1,
+                        'Order': 120,
+                        'Show': True,
+                    }
+                },
+            ]
+
+
+                
+        elif 'Purdue' in self.ParentObject.Attributes['QualificationType']:
             #print 'Parsing PurdueTest ...'
             self.ResultData['SubTestResultDictList'] = [
                 {
@@ -730,7 +807,6 @@ class TestResult(GeneralTestResult):
             # raise exception if any data is missing
             if SubtestMissing:
                 raise Exception("Test data incomplete! => Module will be graded C")
-
             Row.update({
                 'PixelDefects': '{PixelDefects:d}'.format(PixelDefects=self.ResultData['SubTestResults']['Summary1'].ResultData['KeyValueDictPairs']['PixelDefects'][
                     'NumericValue']),
@@ -762,7 +838,7 @@ class TestResult(GeneralTestResult):
                         'Value'],
                 })
                        
-            if 'Purdue' not in self.ParentObject.Attributes['QualificationType']:
+            if 'Purdue' not in self.ParentObject.Attributes['QualificationType'] and 'Quicktest' not in self.ParentObject.Attributes['QualificationType']:
                 Row.update({
                     'nMaskDefects':
                         self.ResultData['SubTestResults']['Summary1'].ResultData['KeyValueDictPairs']['MaskDefects']['Value'],

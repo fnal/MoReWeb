@@ -13,6 +13,32 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         self.Title = 'Chip '+str(self.Attributes['ChipNo'])
         # order!
         self.ResultData['SubTestResultDictList'] = []
+        
+        if 'Quicktest' in self.ParentObject.ParentObject.ParentObject.Attributes['QualificationType']:
+            #parse quick test for mounting
+            self.ResultData['SubTestResultDictList'] += [
+                {
+                    'Key':'PixelMap',
+                    'DisplayOptions':{
+                        'Order':1,
+                    }
+                },
+                {'Key':'Grading',
+                    'DisplayOptions':{
+                        'Show':False,
+                    }
+                },
+                {'Key':'Summary',
+                    'DisplayOptions':{
+                        'Order':8,
+                    }
+                },
+                {'Key':'DacDac',
+                    'DisplayOptions':{
+                    }
+                }
+            ]
+            return
 
         if 'Purdue' in self.ParentObject.ParentObject.ParentObject.Attributes['QualificationType']:
             #print 'In Chips Parsing PurdueTest ...'

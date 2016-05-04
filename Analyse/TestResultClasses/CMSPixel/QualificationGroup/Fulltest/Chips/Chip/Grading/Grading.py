@@ -57,7 +57,49 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         return ChipGrade
 
     def PopulateResultData(self):
+    
+        if 'Quicktest' in self.ParentObject.ParentObject.ParentObject.ParentObject.Attributes['QualificationType']:
         
+            ChipNo = self.ParentObject.Attributes['ChipNo']
+
+            self.ResultData['HiddenData']['DeadPixelList'] = self.ParentObject.ResultData['SubTestResults']['PixelMap'].ResultData['KeyValueDictPairs']['DeadPixels']['Value']
+
+            self.ResultData['HiddenData']['TotalList'] = (
+                self.ResultData['HiddenData']['DeadPixelList']
+            )
+            
+            PixelDefectsGradeALimit = self.TestResultEnvironmentObject.GradingParameters['defectsB']
+            PixelDefectsGradeBLimit = self.TestResultEnvironmentObject.GradingParameters['defectsC']
+            totalDefects = len(self.ResultData['HiddenData']['TotalList'])
+            if totalDefects < PixelDefectsGradeALimit:
+                pixelDefectsGrade = 1
+            elif totalDefects < PixelDefectsGradeBLimit:
+                pixelDefectsGrade = 2
+            else:
+                pixelDefectsGrade = 3
+            GradeMapping = {1:'A', 2:'B', 3:'C'}
+            Grade = 'None'
+            try:
+                Grade = GradeMapping[pixelDefectsGrade]
+            except:
+                pass
+
+            print '\nChip %d Pixel Defects Grade %s'%(self.chipNo, Grade)
+
+            print '\ttotal: %4d'%len(self.ResultData['HiddenData']['TotalList'])
+            print '\tdead:  %4d'%len(self.ResultData['HiddenData']['DeadPixelList'])
+
+            print '-'*78
+
+            self.ResultData['KeyValueDictPairs'] = {
+                'PixelDefectsGrade':{
+                    'Value': '%d'%pixelDefectsGrade,
+                    'Label': 'Pixel Defects Grade ROC'
+                },
+            }
+            self.ResultData['KeyList'] = ['PixelDefectsGrade']
+            return
+
         if 'Purdue' in self.ParentObject.ParentObject.ParentObject.ParentObject.Attributes['QualificationType']:
         
             ChipNo = self.ParentObject.Attributes['ChipNo']

@@ -211,6 +211,9 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             elif 'purduetest' in test.testname.lower():
                 print '\t-> appendFulltest'
                 tests, test, index = self.appendFulltest(tests, test, index)
+            elif 'quicktest' in test.testname.lower():
+                print '\t-> appendFulltest'
+                tests, test, index = self.appendFulltest(tests, test, index)
             elif 'pretest' in test.testname.lower():
                 print '\t-> appendPretest'
                 # skips the pretest, not a high priority to parse
