@@ -31,7 +31,6 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                 for row in range(self.nRows):
                     if histo.GetBinContent(col + 1, row + 1) < hitMin and histo.GetBinContent(col + 1, row + 1) != 0:
                       hitMin = histo.GetBinContent(col + 1, row + 1)
-                      print hitMin
                     result = histo.GetBinContent(col + 1, row + 1)
                     self.UpdatePlot(chipNo, col, row, result)
         lowRange = hitMin - 1
