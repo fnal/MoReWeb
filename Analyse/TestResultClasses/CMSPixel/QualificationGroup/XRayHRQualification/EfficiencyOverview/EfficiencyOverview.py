@@ -11,7 +11,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
     def PopulateResultData(self):
         plots = [None] * 16
-
+        hitMin = 50
         xBins = 8 * self.nCols + 1
         yBins = 2 * self.nRows + 1
         self.ResultData['Plot']['ROOTObject'] = ROOT.TH2D(self.GetUniqueID(), "", xBins, 0., xBins, yBins, 0., yBins)
@@ -26,15 +26,17 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             histoName = 'EfficiencyMap_%s' %self.Attributes['Rate'] + '_Summary%s'  %chipNo
             histo.SetName(histoName)
             plots[chipNo] = histo
-
+            
             for col in range(self.nCols):
                 for row in range(self.nRows):
+                    if histo.GetBinContent(col + 1, row + 1) < hitMin:
+                      hitMin = histo.GetBinContent(col + 1, row + 1)
                     result = histo.GetBinContent(col + 1, row + 1)
                     self.UpdatePlot(chipNo, col, row, result)
-
+        lowRange = hitMin - 1
         summaryPlot = makeMergedPlot(plots)
 #        zRange = findZRange(plots)
-        setZRange(summaryPlot,[0,50]) # don't ask me why...
+        setZRange(summaryPlot,[lowRange,50]) # don't ask me why...
         self.Canvas = setupSummaryCanvas(summaryPlot)
 
         self.ResultData['Plot']['Format'] = 'png'
