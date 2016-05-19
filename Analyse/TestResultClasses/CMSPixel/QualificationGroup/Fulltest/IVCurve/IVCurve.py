@@ -301,7 +301,7 @@ class TestResult(GeneralTestResult):
         self.ResultData['Plot']['ROOTObject'].GetYaxis().SetDecimals()
         self.ResultData['Plot']['ROOTObject'].GetYaxis().SetTitleOffset(1.5)
         self.ResultData['Plot']['ROOTObject'].GetYaxis().CenterTitle()
-        self.ResultData['Plot']['ROOTObject'].Draw("aC")
+        self.ResultData['Plot']['ROOTObject'].Draw("aL")
 
         CurrentAtVoltage150V *= self.ResultData['HiddenData']['FactorI'] 
         CurrentAtVoltage150V *= 1./self.ResultData['KeyValueDictPairs']['CurrentAtVoltage150V']['Factor'] #to show the value in muA and not in A
