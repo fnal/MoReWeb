@@ -136,6 +136,11 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
                         'Order':5,
                     }
                 },
+                {'Key':'NoiseMap',
+                    'DisplayOptions':{
+                        'Order':6,
+                    }
+                },
                 {'Key':'BB2Scan',
                     'DisplayOptions':{ 
                         'Order':6,

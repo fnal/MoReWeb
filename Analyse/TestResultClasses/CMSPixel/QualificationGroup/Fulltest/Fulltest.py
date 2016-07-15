@@ -476,6 +476,17 @@ class TestResult(GeneralTestResult):
 
                 },
                 {
+                    'Key': 'NoiseMap',
+                    'DisplayOptions': {
+                        'Width': 4,
+                        'Order': 7,
+                    },
+                    'InitialAttributes': {
+                        'QualificationType': 'PurdueTest',
+                    }
+                
+                },
+                {
                     'Key': 'BumpBondingMap',
                     'DisplayOptions': {
                         'Width': 4,
