@@ -17,13 +17,13 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         ChipNo=self.ParentObject.Attributes['ChipNo']
 
         try:
-            self.ResultData['Plot']['ROOTObject'] = self.ParentObject.ResultData['SubTestResults']['SCurveWidths'].ResultData['Plot']['ROOTObject_ht'].Clone(self.GetUniqueID())
+            self.ResultData['Plot']['ROOTObject'] = self.ParentObject.ResultData['SubTestResults']['SCurveWidths'].ResultData['Plot']['ROOTObject_hn'].Clone(self.GetUniqueID())
         except:
             self.ResultData['Plot']['ROOTObject'] = None
             print 'DID NOT FIND WIDTHS'
 
         if self.ResultData['Plot']['ROOTObject']:
-            self.ResultData['Plot']['ROOTObject'].GetZaxis().SetRangeUser(0, 200)
+            self.ResultData['Plot']['ROOTObject'].GetZaxis().SetRangeUser(0, 10)
             self.ResultData['Plot']['ROOTObject'].GetXaxis().SetTitle("Column No.")
             self.ResultData['Plot']['ROOTObject'].GetYaxis().SetTitle("Row No.")
             self.ResultData['Plot']['ROOTObject'].GetXaxis().CenterTitle()
@@ -32,7 +32,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
             self.ResultData['Plot']['ROOTObject'].Draw('colz')
 
 
-        self.ResultData['Plot']['Caption'] = 'Noise Map'
+        self.ResultData['Plot']['Caption'] = 'Noise Map (Vcal)'
         if self.Canvas:
             self.Canvas.SetCanvasSize(500, 500)
         self.ResultData['Plot']['Format'] = 'png'
