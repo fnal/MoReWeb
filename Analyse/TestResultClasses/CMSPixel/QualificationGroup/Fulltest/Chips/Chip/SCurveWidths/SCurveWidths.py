@@ -41,6 +41,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         self.ResultData['Plot']['ROOTObject'] =ROOT.TH1D(self.GetUniqueID(), "", 100, 0., 600.) # hw
         self.ResultData['Plot']['ROOTObject_hd'] =ROOT.TH1D(self.GetUniqueID(), "", 100, 0., 600.) #Noise in unbonded pixel (not displayed) # hd
         self.ResultData['Plot']['ROOTObject_ht'] = ROOT.TH2D(self.GetUniqueID(), "", self.nCols, 0., self.nCols, self.nRows, 0., self.nRows) # ht
+        self.ResultData['Plot']['ROOTObject_hn'] = ROOT.TH2D(self.GetUniqueID(), "", self.nCols, 0., self.nCols, self.nRows, 0., self.nRows) # noise 2d map
         isDigitalROC = False
 
         ChipNo = self.ParentObject.Attributes['ChipNo']
@@ -105,7 +106,8 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
                             if Width < NoiseMin or Width > NoiseMax:
                                 self.NoiseDefectsList.add((ChipNo, column, row))
-
+                    
+                        self.ResultData['Plot']['ROOTObject_hn'].SetBinContent(1+column, 1+row, Width/self.TestResultEnvironmentObject.GradingParameters['StandardVcal2ElectronConversionFactor'])
                         Threshold = Threshold / self.TestResultEnvironmentObject.GradingParameters['StandardVcal2ElectronConversionFactor']
                         self.ResultData['Plot']['ROOTObject_ht'].SetBinContent(column+1, row+1, Threshold)
                         if not isDigitalROC and self.ResultData['Plot']['ROOTObject_h2'].GetBinContent(column+1, row+1) >= self.TestResultEnvironmentObject.GradingParameters['minThrDiff']:
