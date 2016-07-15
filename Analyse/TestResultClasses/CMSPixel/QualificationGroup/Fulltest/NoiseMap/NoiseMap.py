@@ -24,7 +24,7 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
 
         summaryPlot = makeMergedPlot(plots)
 
-        setZRange(summaryPlot,[0.0,200.0])
+        setZRange(summaryPlot,[0.0,10.0])
         self.Canvas = setupSummaryCanvas(summaryPlot)
 
         #colors = array("i",[51+i for i in range(40)] + [ROOT.kRed])
