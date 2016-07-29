@@ -17,7 +17,10 @@ class TestResult(AbstractClasses.GeneralTestResult.GeneralTestResult):
         ChipNo=self.ParentObject.Attributes['ChipNo']
 
         try:
-            self.ResultData['Plot']['ROOTObject'] = self.ParentObject.ResultData['SubTestResults']['SCurveWidths'].ResultData['Plot']['ROOTObject_hn'].Clone(self.GetUniqueID())
+            HistoDict = self.ParentObject.ParentObject.ParentObject.HistoDict
+            histname = HistoDict.get(self.NameSingle, 'NoiseMap')
+            NoiseMap = HistoGetter.get_histo(self.ParentObject.ParentObject.FileHandle, histname, rocNo = ChipNo)
+            self.ResultData['Plot']['ROOTObject'] = NoiseMap.Clone(self.GetUniqueID())
         except:
             self.ResultData['Plot']['ROOTObject'] = None
             print 'DID NOT FIND WIDTHS'
